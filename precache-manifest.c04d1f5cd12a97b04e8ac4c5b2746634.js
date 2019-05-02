@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "3bbf8f8312d3f88cf00ca7d4c9f0177d",
+    "revision": "24a3f5281f2f9e113ff17f72143d868b",
     "url": "/flappybutterfly/index.html"
   },
   {
