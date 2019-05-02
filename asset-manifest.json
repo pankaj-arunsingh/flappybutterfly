@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/static/css/main.3e545749.chunk.css",
-    "main.js": "/static/js/main.bc5ba69e.chunk.js",
-    "main.js.map": "/static/js/main.bc5ba69e.chunk.js.map",
-    "runtime~main.js": "/static/js/runtime~main.a8a9905a.js",
-    "runtime~main.js.map": "/static/js/runtime~main.a8a9905a.js.map",
-    "static/js/2.b41502e9.chunk.js": "/static/js/2.b41502e9.chunk.js",
-    "static/js/2.b41502e9.chunk.js.map": "/static/js/2.b41502e9.chunk.js.map",
-    "index.html": "/index.html",
-    "precache-manifest.f6f0a54e26f2167cf7934306aa7acdd4.js": "/precache-manifest.f6f0a54e26f2167cf7934306aa7acdd4.js",
-    "service-worker.js": "/service-worker.js",
-    "static/css/main.3e545749.chunk.css.map": "/static/css/main.3e545749.chunk.css.map",
-    "static/media/logo.svg": "/static/media/logo.5d5d9eef.svg"
+    "main.css": "/flappybutterfly/static/css/main.3e545749.chunk.css",
+    "main.js": "/flappybutterfly/static/js/main.a90f3923.chunk.js",
+    "main.js.map": "/flappybutterfly/static/js/main.a90f3923.chunk.js.map",
+    "runtime~main.js": "/flappybutterfly/static/js/runtime~main.ef5ed3f5.js",
+    "runtime~main.js.map": "/flappybutterfly/static/js/runtime~main.ef5ed3f5.js.map",
+    "static/js/2.b41502e9.chunk.js": "/flappybutterfly/static/js/2.b41502e9.chunk.js",
+    "static/js/2.b41502e9.chunk.js.map": "/flappybutterfly/static/js/2.b41502e9.chunk.js.map",
+    "index.html": "/flappybutterfly/index.html",
+    "precache-manifest.dcabbdabf19aa842bc6a2cce98894234.js": "/flappybutterfly/precache-manifest.dcabbdabf19aa842bc6a2cce98894234.js",
+    "service-worker.js": "/flappybutterfly/service-worker.js",
+    "static/css/main.3e545749.chunk.css.map": "/flappybutterfly/static/css/main.3e545749.chunk.css.map",
+    "static/media/logo.svg": "/flappybutterfly/static/media/logo.5d5d9eef.svg"
   }
 }
