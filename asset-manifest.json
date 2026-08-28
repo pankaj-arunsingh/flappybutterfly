@@ -1,16 +1,15 @@
 {
   "files": {
-    "main.css": "/flappybutterfly/static/css/main.3e545749.chunk.css",
-    "main.js": "/flappybutterfly/static/js/main.a90f3923.chunk.js",
-    "main.js.map": "/flappybutterfly/static/js/main.a90f3923.chunk.js.map",
+    "main.css": "/flappybutterfly/static/css/main.54e65320.chunk.css",
+    "main.js": "/flappybutterfly/static/js/main.6428c9a4.chunk.js",
+    "main.js.map": "/flappybutterfly/static/js/main.6428c9a4.chunk.js.map",
     "runtime~main.js": "/flappybutterfly/static/js/runtime~main.ef5ed3f5.js",
     "runtime~main.js.map": "/flappybutterfly/static/js/runtime~main.ef5ed3f5.js.map",
-    "static/js/2.b41502e9.chunk.js": "/flappybutterfly/static/js/2.b41502e9.chunk.js",
-    "static/js/2.b41502e9.chunk.js.map": "/flappybutterfly/static/js/2.b41502e9.chunk.js.map",
+    "static/js/2.d042e1ad.chunk.js": "/flappybutterfly/static/js/2.d042e1ad.chunk.js",
+    "static/js/2.d042e1ad.chunk.js.map": "/flappybutterfly/static/js/2.d042e1ad.chunk.js.map",
     "index.html": "/flappybutterfly/index.html",
-    "precache-manifest.27ac76256d5e1b7cab1a7e82c33f3eee.js": "/flappybutterfly/precache-manifest.27ac76256d5e1b7cab1a7e82c33f3eee.js",
+    "precache-manifest.ebfdbefb9693fb390dbba550806d80c1.js": "/flappybutterfly/precache-manifest.ebfdbefb9693fb390dbba550806d80c1.js",
     "service-worker.js": "/flappybutterfly/service-worker.js",
-    "static/css/main.3e545749.chunk.css.map": "/flappybutterfly/static/css/main.3e545749.chunk.css.map",
-    "static/media/logo.svg": "/flappybutterfly/static/media/logo.5d5d9eef.svg"
+    "static/css/main.54e65320.chunk.css.map": "/flappybutterfly/static/css/main.54e65320.chunk.css.map"
   }
 }
