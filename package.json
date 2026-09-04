@@ -37,7 +37,7 @@
             "react-app/jest"
         ]
     },
-    "homepage": "https://pankaj-arunsingh.github.io/flappybutterfly/",
+    "homepage": ".",
     "browserslist": {
         "production": [
             ">0.2%",
