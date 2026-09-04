@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.0/workbox-sw.js");
 
 importScripts(
-  "/flappybutterfly/precache-manifest.ebfdbefb9693fb390dbba550806d80c1.js"
+  "/flappybutterfly/precache-manifest.65a8868c2efb8087a9d4b0ac83c6f9c2.js"
 );
 
 self.addEventListener('message', (event) => {
