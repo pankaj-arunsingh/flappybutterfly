@@ -225,6 +225,7 @@ const Game: React.FC = () => {
         <canvas
           ref={canvasRef}
           className="game-canvas"
+          data-testid="game-canvas"
           width={GAME_WIDTH}
           height={GAME_HEIGHT}
           onMouseDown={onFlap}

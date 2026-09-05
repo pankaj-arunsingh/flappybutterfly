@@ -69,9 +69,9 @@ describe('Game (react-testing-library)', () => {
   });
 
   it('starts playing when canvas is clicked (overlay disappears)', () => {
-    const { container } = render(<Game />);
+    render(<Game />);
     stepFrames(2);
-    const canvas = container.querySelector('canvas.game-canvas') as HTMLCanvasElement;
+    const canvas = screen.getByTestId('game-canvas');
     fireEvent.mouseDown(canvas);
     stepFrames(1);
     expect(screen.queryByText(/Tap to fly/i)).not.toBeInTheDocument();
@@ -90,7 +90,7 @@ describe('Game (react-testing-library)', () => {
     const collidesDi = injectable(logicModule.collidesWithWorld, () => true);
     const writeHighScoreDi = injectable(logicModule.writeHighScore, jest.fn());
 
-    const { container } = render(
+    render(
       <DiProvider use={[readHighScoreDi, collidesDi, writeHighScoreDi]}>
         <Game />
       </DiProvider>
@@ -98,7 +98,7 @@ describe('Game (react-testing-library)', () => {
     stepFrames(2);
 
     // ready -> playing
-    const canvas = container.querySelector('canvas.game-canvas') as HTMLCanvasElement;
+    const canvas = screen.getByTestId('game-canvas');
     fireEvent.mouseDown(canvas);
     // next frames run with collidesWithWorld mocked to true -> dead
     stepFrames(3);
@@ -118,7 +118,7 @@ describe('Game (react-testing-library)', () => {
     const collidesDi = injectable(logicModule.collidesWithWorld, () => true);
     const writeHighScoreDi = injectable(logicModule.writeHighScore, jest.fn());
 
-    const { container } = render(
+    render(
       <DiProvider use={[readHighScoreDi, collidesDi, writeHighScoreDi]}>
         <Game />
       </DiProvider>
@@ -126,7 +126,7 @@ describe('Game (react-testing-library)', () => {
     stepFrames(2);
 
     // ready -> playing
-    const canvas = container.querySelector('canvas.game-canvas') as HTMLCanvasElement;
+    const canvas = screen.getByTestId('game-canvas');
     fireEvent.mouseDown(canvas);
     // next frames run with collidesWithWorld mocked to true -> dead
     stepFrames(3);
