@@ -27,12 +27,18 @@ function roundRect(
   ctx.closePath();
 }
 
+const skyGradients = new WeakMap<CanvasRenderingContext2D, CanvasGradient>();
+
 export function drawSky(ctx: CanvasRenderingContext2D) {
-  const sky = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
-  sky.addColorStop(0, '#7ec8e8');
-  sky.addColorStop(0.45, '#c5e8f7');
-  sky.addColorStop(0.78, '#f7e7c3');
-  sky.addColorStop(1, '#d7ef9f');
+  let sky = skyGradients.get(ctx);
+  if (!sky) {
+    sky = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
+    sky.addColorStop(0, '#7ec8e8');
+    sky.addColorStop(0.45, '#c5e8f7');
+    sky.addColorStop(0.78, '#f7e7c3');
+    sky.addColorStop(1, '#d7ef9f');
+    skyGradients.set(ctx, sky);
+  }
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 }

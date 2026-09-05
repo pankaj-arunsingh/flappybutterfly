@@ -81,13 +81,22 @@ const Game: React.FC = () => {
       return;
     }
 
-    const ratio = window.devicePixelRatio || 1;
+    // Cap backing-store resolution: phones report DPR 3+, which makes
+    // every full-canvas fill ~9x the work for no visible gain at 520x640.
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = GAME_WIDTH * ratio;
     canvas.height = GAME_HEIGHT * ratio;
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-    let frame = 0;
-    const loop = () => {
+    // Fixed-timestep simulation: advance physics in 60Hz steps based on
+    // elapsed wall time, so game speed is identical at 30/60/120fps.
+    // (Previously one physics step ran per rAF frame, so low-fps phones
+    // ran the whole game in slow motion.)
+    const STEP = 1000 / 60;
+    let last = performance.now();
+    let acc = 0;
+
+    const update = () => {
       const state = stateRef.current;
       state.tick += 1;
 
@@ -127,7 +136,10 @@ const Game: React.FC = () => {
           wing: state.butterfly.wing + 0.08,
         });
       }
+    };
 
+    const render = () => {
+      const state = stateRef.current;
       drawSky(ctx);
       state.clouds.forEach(function (cloud) {
         drawCloud(ctx, cloud);
@@ -141,8 +153,31 @@ const Game: React.FC = () => {
       if (state.phase === 'playing' || state.phase === 'dead') {
         drawScore(ctx, state.score);
       }
+    };
 
+    let frame = 0;
+    const loop = (now: number) => {
       frame = window.requestAnimationFrame(loop);
+      let dt = now - last;
+      last = now;
+      if (dt < 0) {
+        dt = 0;
+      }
+      if (dt > 100) {
+        // Tab was hidden / hitch: don't spiral, just resume.
+        dt = 100;
+      }
+      acc += dt;
+      let steps = 0;
+      while (acc >= STEP && steps < 5) {
+        update();
+        acc -= STEP;
+        steps += 1;
+      }
+      if (steps === 5) {
+        acc = 0;
+      }
+      render();
     };
 
     frame = window.requestAnimationFrame(loop);
