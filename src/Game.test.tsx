@@ -85,6 +85,34 @@ describe('Game (react-testing-library)', () => {
     expect(screen.queryByText(/Tap to fly/i)).not.toBeInTheDocument();
   });
 
+  it('ignores key repeat events after game over so holding space does not restart', () => {
+    const readHighScoreDi = injectable(logicModule.readHighScore, () => 5);
+    const collidesDi = injectable(logicModule.collidesWithWorld, () => true);
+    const writeHighScoreDi = injectable(logicModule.writeHighScore, jest.fn());
+
+    const { container } = render(
+      <DiProvider use={[readHighScoreDi, collidesDi, writeHighScoreDi]}>
+        <Game />
+      </DiProvider>
+    );
+    stepFrames(2);
+
+    // ready -> playing
+    const canvas = container.querySelector('canvas.game-canvas') as HTMLCanvasElement;
+    fireEvent.mouseDown(canvas);
+    // next frames run with collidesWithWorld mocked to true -> dead
+    stepFrames(3);
+
+    expect(screen.getByText(/Game over/i)).toBeInTheDocument();
+
+    // A repeated keydown (as OS key auto-repeat produces while a key is held)
+    // must not flap and must not restart a new run from the game-over screen.
+    fireEvent.keyDown(window, { code: 'Space', key: ' ', repeat: true });
+    stepFrames(1);
+    expect(screen.getByText(/Game over/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Tap to fly/i)).not.toBeInTheDocument();
+  });
+
   it('uses magnetic-di to force game over with mocked high score', () => {
     const readHighScoreDi = injectable(logicModule.readHighScore, () => 5);
     const collidesDi = injectable(logicModule.collidesWithWorld, () => true);

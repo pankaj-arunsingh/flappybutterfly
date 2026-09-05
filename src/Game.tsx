@@ -204,6 +204,7 @@ const Game: React.FC = () => {
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
+      if (event.repeat) return;
       if (event.code === 'Space' || event.key === ' ') {
         event.preventDefault();
         onFlap();
