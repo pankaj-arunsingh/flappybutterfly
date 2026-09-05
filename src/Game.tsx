@@ -204,6 +204,7 @@ const Game: React.FC = () => {
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
+      if (event.repeat) return;
       if (event.code === 'Space' || event.key === ' ') {
         event.preventDefault();
         onFlap();
@@ -224,6 +225,7 @@ const Game: React.FC = () => {
         <canvas
           ref={canvasRef}
           className="game-canvas"
+          data-testid="game-canvas"
           width={GAME_WIDTH}
           height={GAME_HEIGHT}
           onMouseDown={onFlap}

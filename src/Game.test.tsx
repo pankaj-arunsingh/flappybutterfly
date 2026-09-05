@@ -69,9 +69,9 @@ describe('Game (react-testing-library)', () => {
   });
 
   it('starts playing when canvas is clicked (overlay disappears)', () => {
-    const { container } = render(<Game />);
+    render(<Game />);
     stepFrames(2);
-    const canvas = container.querySelector('canvas.game-canvas') as HTMLCanvasElement;
+    const canvas = screen.getByTestId('game-canvas');
     fireEvent.mouseDown(canvas);
     stepFrames(1);
     expect(screen.queryByText(/Tap to fly/i)).not.toBeInTheDocument();
@@ -85,12 +85,12 @@ describe('Game (react-testing-library)', () => {
     expect(screen.queryByText(/Tap to fly/i)).not.toBeInTheDocument();
   });
 
-  it('uses magnetic-di to force game over with mocked high score', () => {
+  it('ignores key repeat events after game over so holding space does not restart', () => {
     const readHighScoreDi = injectable(logicModule.readHighScore, () => 5);
     const collidesDi = injectable(logicModule.collidesWithWorld, () => true);
     const writeHighScoreDi = injectable(logicModule.writeHighScore, jest.fn());
 
-    const { container } = render(
+    render(
       <DiProvider use={[readHighScoreDi, collidesDi, writeHighScoreDi]}>
         <Game />
       </DiProvider>
@@ -98,7 +98,35 @@ describe('Game (react-testing-library)', () => {
     stepFrames(2);
 
     // ready -> playing
-    const canvas = container.querySelector('canvas.game-canvas') as HTMLCanvasElement;
+    const canvas = screen.getByTestId('game-canvas');
+    fireEvent.mouseDown(canvas);
+    // next frames run with collidesWithWorld mocked to true -> dead
+    stepFrames(3);
+
+    expect(screen.getByText(/Game over/i)).toBeInTheDocument();
+
+    // A repeated keydown (as OS key auto-repeat produces while a key is held)
+    // must not flap and must not restart a new run from the game-over screen.
+    fireEvent.keyDown(window, { code: 'Space', key: ' ', repeat: true });
+    stepFrames(1);
+    expect(screen.getByText(/Game over/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Tap to fly/i)).not.toBeInTheDocument();
+  });
+
+  it('uses magnetic-di to force game over with mocked high score', () => {
+    const readHighScoreDi = injectable(logicModule.readHighScore, () => 5);
+    const collidesDi = injectable(logicModule.collidesWithWorld, () => true);
+    const writeHighScoreDi = injectable(logicModule.writeHighScore, jest.fn());
+
+    render(
+      <DiProvider use={[readHighScoreDi, collidesDi, writeHighScoreDi]}>
+        <Game />
+      </DiProvider>
+    );
+    stepFrames(2);
+
+    // ready -> playing
+    const canvas = screen.getByTestId('game-canvas');
     fireEvent.mouseDown(canvas);
     // next frames run with collidesWithWorld mocked to true -> dead
     stepFrames(3);
