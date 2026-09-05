@@ -13,4 +13,11 @@ module.exports = {
             ],
         ],
     },
+    jest: {
+        configure: {
+            moduleNameMapper: {
+                '^@vercel/analytics/react$': '<rootDir>/src/__mocks__/@vercel/analytics.ts',
+            },
+        },
+    },
 };
