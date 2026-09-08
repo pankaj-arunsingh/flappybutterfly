@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { playDeath, playFlap, playScore } from './game/audio';
 import {
   CLOUD_SPEED,
   GAME_HEIGHT,
   GAME_WIDTH,
-  GROUND_SPEED,
 } from './game/config';
 import {
   drawButterfly,
@@ -21,6 +21,7 @@ import {
   createInitialPipes,
   flap,
   medalForScore,
+  pipeSpeedAt,
   readHighScore,
   stepButterfly,
   stepPipes,
@@ -107,17 +108,21 @@ const Game: React.FC = () => {
         }
         return { x: x, y: cloud.y, scale: cloud.scale };
       });
-      state.groundOffset = (state.groundOffset + GROUND_SPEED) % 48;
+      state.groundOffset = (state.groundOffset + pipeSpeedAt(state.score)) % 48;
 
       if (state.phase === 'playing') {
         state.butterfly = stepButterfly(state.butterfly, true);
-        const moved = stepPipes(state.pipes, state.butterfly);
+        const moved = stepPipes(state.pipes, state.butterfly, state.score);
         state.pipes = moved.pipes;
         if (moved.scored > 0) {
           state.score += moved.scored;
+          playScore();
+          navigator.vibrate?.(10);
         }
         if (collidesWithWorld(state.butterfly, state.pipes)) {
           state.phase = 'dead';
+          playDeath();
+          navigator.vibrate?.(20);
           if (state.score > state.highScore) {
             state.highScore = state.score;
             writeHighScore(state.highScore);
@@ -191,14 +196,18 @@ const Game: React.FC = () => {
     if (state.phase === 'ready') {
       state.phase = 'playing';
       state.butterfly = flap(state.butterfly);
+      playFlap();
       syncUi(state);
       return;
     }
     if (state.phase === 'playing') {
       state.butterfly = flap(state.butterfly);
+      playFlap();
       return;
     }
-    stateRef.current = createState('ready', state.highScore);
+    stateRef.current = createState('playing', state.highScore);
+    stateRef.current.butterfly = flap(stateRef.current.butterfly);
+    playFlap();
     syncUi(stateRef.current);
   }, [syncUi]);
 

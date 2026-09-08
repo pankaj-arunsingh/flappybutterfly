@@ -4,7 +4,6 @@ import {
   GAME_HEIGHT,
   GAME_WIDTH,
   GROUND_HEIGHT,
-  PIPE_GAP,
   PIPE_WIDTH,
 } from './config';
 import { Butterfly, Cloud, Medal, Pipe } from './types';
@@ -103,8 +102,8 @@ function drawFlowerHead(ctx: CanvasRenderingContext2D, x: number, y: number, fac
 }
 
 export function drawPipe(ctx: CanvasRenderingContext2D, pipe: Pipe) {
-  const gapTop = pipe.gapY - PIPE_GAP / 2;
-  const gapBottom = pipe.gapY + PIPE_GAP / 2;
+  const gapTop = pipe.gapY - pipe.gap / 2;
+  const gapBottom = pipe.gapY + pipe.gap / 2;
   const groundY = GAME_HEIGHT - GROUND_HEIGHT;
 
   const vine = ctx.createLinearGradient(pipe.x, 0, pipe.x + PIPE_WIDTH, 0);
