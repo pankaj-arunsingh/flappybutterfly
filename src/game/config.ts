@@ -27,6 +27,5 @@ export const EASY_PIPE_SPACING = 350;
 export const RAMP_PIPES = 7;
 
 export const CLOUD_SPEED = 0.18;
-export const GROUND_SPEED = PIPE_SPEED;
 
 export const HIGH_SCORE_KEY = 'flappybutterfly-highscore';

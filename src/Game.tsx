@@ -4,7 +4,6 @@ import {
   CLOUD_SPEED,
   GAME_HEIGHT,
   GAME_WIDTH,
-  GROUND_SPEED,
 } from './game/config';
 import {
   drawButterfly,
@@ -22,6 +21,7 @@ import {
   createInitialPipes,
   flap,
   medalForScore,
+  pipeSpeedAt,
   readHighScore,
   stepButterfly,
   stepPipes,
@@ -108,7 +108,7 @@ const Game: React.FC = () => {
         }
         return { x: x, y: cloud.y, scale: cloud.scale };
       });
-      state.groundOffset = (state.groundOffset + GROUND_SPEED) % 48;
+      state.groundOffset = (state.groundOffset + pipeSpeedAt(state.score)) % 48;
 
       if (state.phase === 'playing') {
         state.butterfly = stepButterfly(state.butterfly, true);

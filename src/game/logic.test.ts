@@ -1,5 +1,5 @@
 import { injectable, runWithDi } from 'react-magnetic-di';
-import { medalForScore, collidesWithWorld, createButterfly, createInitialPipes, hitbox, randomGapY, difficultyAt, lerp } from './logic';
+import { medalForScore, collidesWithWorld, createButterfly, createInitialPipes, hitbox, randomGapY, difficultyAt, lerp, pipeSpeedAt } from './logic';
 import { EASY_PIPE_GAP, EASY_PIPE_SPEED, GAME_HEIGHT, GROUND_HEIGHT, PIPE_GAP, PIPE_SPEED, RAMP_PIPES } from './config';
 import { Pipe } from './types';
 
@@ -103,5 +103,13 @@ describe('difficulty curve', () => {
 
   it('easy-mode speed is slower than full-difficulty speed', () => {
     expect(EASY_PIPE_SPEED).toBeLessThan(PIPE_SPEED);
+  });
+
+  it('pipeSpeedAt starts at easy speed and reaches full speed after the ramp', () => {
+    expect(pipeSpeedAt(0)).toBe(EASY_PIPE_SPEED);
+    expect(pipeSpeedAt(RAMP_PIPES)).toBe(PIPE_SPEED);
+    const mid = pipeSpeedAt(Math.floor(RAMP_PIPES / 2));
+    expect(mid).toBeGreaterThan(EASY_PIPE_SPEED);
+    expect(mid).toBeLessThan(PIPE_SPEED);
   });
 });

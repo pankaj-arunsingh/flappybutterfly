@@ -6,8 +6,7 @@ Flappy Butterfly — a Flappy Bird–style arcade game (butterfly vs. vines) for
 
 ## Stack
 
-- React + TypeScript + HTML5 Canvas (Create React App `react-scripts@3`)
-- Node 17+ needs `NODE_OPTIONS=--openssl-legacy-provider` for `start`/`test`/`build` (baked into `package.json` scripts)
+- React + TypeScript + HTML5 Canvas (react@18.3.1, react-scripts@5.0.1 via CRACO)
 - No game engine; NO real-time multiplayer; NO server backend (static deploy via GitHub Pages / Netlify / Vercel)
 
 ## Where the code lives
@@ -38,7 +37,7 @@ New pipes interpolate gap/speed/spacing from easy-mode to full difficulty over t
 
 ## Testing
 
-`NODE_OPTIONS=--openssl-legacy-provider npm test -- --watchAll=false` runs Jest. Core tests: `src/game/logic.test.ts`.
+`craco test -- --watchAll=false` runs Jest. Core tests: `src/game/logic.test.ts`.
 
 > Note: a few pre-existing suites fail (magnetic-di mocking + the `@vercel/analytics/react` module resolution). The difficulty-curve tests and other pure-logic tests are green — don't assume a failure is caused by your change until you check against a clean checkout.
 

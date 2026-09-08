@@ -50,7 +50,7 @@ All rendering is immediate-mode Canvas 2D at 60fps via `requestAnimationFrame`:
 - `drawCloud` — 4 drifting clouds (`CLOUD_SPEED = 0.18`)
 - `drawHills` — two layers of background hills
 - `drawPipe` — green vines with petal flower heads (`pink #ff7eb6` / `yellow #ffd166`) capping each gap edge
-- `drawGround` — scrolling grass/dirt strip (`GROUND_SPEED = PIPE_SPEED`)
+- `drawGround` — scrolling grass/dirt strip (tracks the live pipe speed via `pipeSpeedAt`)
 - `drawButterfly` — animated wings (sine-wave flap), body tilt based on `vy`, dead tilt on game over
 - `drawScore` — big outlined score at the top during `playing` / `dead`
 
