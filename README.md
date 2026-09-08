@@ -94,10 +94,10 @@ No haptic on flap. Guarded so desktop browsers are unaffected.
 
 ## Tech stack
 
-- `react@16.8.6`, `react-dom@16.8.6`
-- `typescript@3.4.5`
-- `react-scripts@3.0.0` (Create React App)
-- `gh-pages@2.0.1` for GitHub Pages deploy
+- `react@18.3.1`, `react-dom@18.3.1`
+- `typescript@~4.9.5`
+- `react-scripts@5.0.1` + `@craco/craco@^7.1.0`
+- `gh-pages@^5.0.0` for GitHub Pages deploy
 - No game engine — custom loop in `Game.tsx` + pure logic in `src/game/logic.ts`
 
 ## Project structure
@@ -124,8 +124,6 @@ src/
 
 - Node.js (LTS recommended)
 - npm (comes with Node) or yarn
-
-> Note: this project uses `react-scripts@3.0.0`, which requires `NODE_OPTIONS=--openssl-legacy-provider` on Node 17+ (already baked into the scripts in `package.json`).
 
 ## Getting started
 
@@ -156,7 +154,7 @@ In the project directory, you can run:
 Runs:
 
 ```bash
-NODE_OPTIONS=--openssl-legacy-provider react-scripts start
+craco start
 ```
 
 Starts the dev server at [http://localhost:3000](http://localhost:3000). Hot-reloads on edits, shows lint errors in console.
@@ -166,7 +164,7 @@ Starts the dev server at [http://localhost:3000](http://localhost:3000). Hot-rel
 Runs:
 
 ```bash
-NODE_OPTIONS=--openssl-legacy-provider react-scripts test
+craco test
 ```
 
 Launches Jest in watch mode. Relevant test file: `src/game/logic.test.ts` — covers:
@@ -191,7 +189,7 @@ yarn test --watchAll=false
 Runs:
 
 ```bash
-NODE_OPTIONS=--openssl-legacy-provider react-scripts build
+craco build
 ```
 
 Bundles React in production mode to `build/`, minified with hashed filenames. Ready to deploy.
