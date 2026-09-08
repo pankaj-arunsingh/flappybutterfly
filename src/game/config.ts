@@ -28,4 +28,12 @@ export const RAMP_PIPES = 7;
 
 export const CLOUD_SPEED = 0.18;
 
+export const NEAR_MISS_THRESHOLD = 30;
+
+export const MAX_PARTICLES = 30;
+
+export const NEAR_MISS_FLASH_FRAMES = 45;
+
+export const SHAKE_FRAMES = 18;
+
 export const HIGH_SCORE_KEY = 'flappybutterfly-highscore';

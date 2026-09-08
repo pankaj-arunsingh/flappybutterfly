@@ -1,21 +1,30 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { playDeath, playFlap, playScore } from './game/audio';
+import { playDeath, playFlap, playNearMiss, playScore } from './game/audio';
 import {
+  BUTTERFLY_HEIGHT,
+  BUTTERFLY_WIDTH,
   CLOUD_SPEED,
   GAME_HEIGHT,
   GAME_WIDTH,
+  NEAR_MISS_FLASH_FRAMES,
+  SHAKE_FRAMES,
 } from './game/config';
 import {
   drawButterfly,
   drawCloud,
+  drawCombo,
+  drawGapGuide,
   drawGround,
   drawHills,
+  drawNearMissFlash,
+  drawParticles,
   drawPipe,
   drawScore,
   drawSky,
   medalColor,
 } from './game/draw';
 import {
+  butterflyOverlapsPipe,
   collidesWithWorld,
   createButterfly,
   createInitialPipes,
@@ -23,8 +32,13 @@ import {
   medalForScore,
   pipeSpeedAt,
   readHighScore,
+  scoreCombo,
+  spawnScoreBurst,
+  spawnScorePopup,
+  spawnTrail,
   stepButterfly,
   stepPipes,
+  updateParticles,
   writeHighScore,
 } from './game/logic';
 import { Cloud, GameState, Phase } from './game/types';
@@ -48,7 +62,28 @@ function createState(phase: Phase, highScore: number): GameState {
     score: 0,
     highScore: highScore,
     tick: 0,
+    particles: [],
+    combo: 0,
+    flappedThroughGap: false,
+    nearMisses: 0,
+    nearMissFlash: 0,
+    shake: 0,
   };
+}
+
+const REDUCED_MOTION =
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia !== 'undefined' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function markGapFlap(state: GameState): void {
+  for (let i = 0; i < state.pipes.length; i += 1) {
+    const pipe = state.pipes[i];
+    if (!pipe.scored && butterflyOverlapsPipe(state.butterfly, pipe)) {
+      state.flappedThroughGap = true;
+      return;
+    }
+  }
 }
 
 const Game: React.FC = () => {
@@ -58,6 +93,7 @@ const Game: React.FC = () => {
     phase: 'ready' as Phase,
     score: 0,
     highScore: 0,
+    nearMisses: 0,
   });
 
   const syncUi = useCallback((state: GameState) => {
@@ -65,6 +101,7 @@ const Game: React.FC = () => {
       phase: state.phase,
       score: state.score,
       highScore: state.highScore,
+      nearMisses: state.nearMisses,
     });
   }, []);
 
@@ -109,20 +146,49 @@ const Game: React.FC = () => {
         return { x: x, y: cloud.y, scale: cloud.scale };
       });
       state.groundOffset = (state.groundOffset + pipeSpeedAt(state.score)) % 48;
+      state.particles = updateParticles(state.particles);
+      if (state.nearMissFlash > 0) {
+        state.nearMissFlash -= 1;
+      }
+      if (state.shake > 0) {
+        state.shake -= 1;
+      }
 
       if (state.phase === 'playing') {
         state.butterfly = stepButterfly(state.butterfly, true);
         const moved = stepPipes(state.pipes, state.butterfly, state.score);
         state.pipes = moved.pipes;
         if (moved.scored > 0) {
-          state.score += moved.scored;
+          let bonus = 0;
+          for (let k = 0; k < moved.scored; k += 1) {
+            const comboResult = scoreCombo(state.combo, state.flappedThroughGap);
+            state.combo = comboResult.combo;
+            bonus += comboResult.bonus;
+          }
+          const points = moved.scored + bonus;
+          state.score += points;
+          state.particles = spawnScoreBurst(
+            state.particles,
+            state.butterfly.x + BUTTERFLY_WIDTH / 2,
+            state.butterfly.y + BUTTERFLY_HEIGHT / 2
+          );
+          state.particles = spawnScorePopup(state.particles, GAME_WIDTH / 2, 130, points);
+          state.flappedThroughGap = false;
           playScore();
           navigator.vibrate?.(10);
+        }
+        if (moved.nearMiss) {
+          state.nearMisses += 1;
+          state.nearMissFlash = NEAR_MISS_FLASH_FRAMES;
+          playNearMiss();
         }
         if (collidesWithWorld(state.butterfly, state.pipes)) {
           state.phase = 'dead';
           playDeath();
           navigator.vibrate?.(20);
+          if (!REDUCED_MOTION) {
+            state.shake = SHAKE_FRAMES;
+          }
           if (state.score > state.highScore) {
             state.highScore = state.score;
             writeHighScore(state.highScore);
@@ -145,6 +211,16 @@ const Game: React.FC = () => {
 
     const render = () => {
       const state = stateRef.current;
+      // Screen shake is visual-only: a render-time canvas offset that never
+      // touches physics or collision.
+      ctx.save();
+      if (state.shake > 0) {
+        const magnitude = Math.min(1, state.shake / 6);
+        ctx.translate(
+          (Math.random() * 2 - 1) * 4 * magnitude,
+          (Math.random() * 2 - 1) * 4 * magnitude
+        );
+      }
       drawSky(ctx);
       state.clouds.forEach(function (cloud) {
         drawCloud(ctx, cloud);
@@ -153,11 +229,18 @@ const Game: React.FC = () => {
       state.pipes.forEach(function (pipe) {
         drawPipe(ctx, pipe);
       });
+      if (state.phase === 'ready' && state.pipes.length > 0) {
+        drawGapGuide(ctx, state.pipes[0], state.tick);
+      }
       drawGround(ctx, state.groundOffset);
       drawButterfly(ctx, state.butterfly, state.phase === 'dead');
+      drawParticles(ctx, state.particles);
       if (state.phase === 'playing' || state.phase === 'dead') {
         drawScore(ctx, state.score);
+        drawCombo(ctx, state.combo);
+        drawNearMissFlash(ctx, state.nearMissFlash);
       }
+      ctx.restore();
     };
 
     let frame = 0;
@@ -196,17 +279,24 @@ const Game: React.FC = () => {
     if (state.phase === 'ready') {
       state.phase = 'playing';
       state.butterfly = flap(state.butterfly);
+      state.particles = spawnTrail(state.particles, state.butterfly);
       playFlap();
       syncUi(state);
       return;
     }
     if (state.phase === 'playing') {
       state.butterfly = flap(state.butterfly);
+      markGapFlap(state);
+      state.particles = spawnTrail(state.particles, state.butterfly);
       playFlap();
       return;
     }
     stateRef.current = createState('playing', state.highScore);
     stateRef.current.butterfly = flap(stateRef.current.butterfly);
+    stateRef.current.particles = spawnTrail(
+      stateRef.current.particles,
+      stateRef.current.butterfly
+    );
     playFlap();
     syncUi(stateRef.current);
   }, [syncUi]);
@@ -246,8 +336,15 @@ const Game: React.FC = () => {
         {ui.phase === 'ready' && (
           <div className="game-overlay">
             <h1>Flappy Butterfly</h1>
-            <p>Tap, click, or press space to flutter through the flowers.</p>
+            <p>Fly through the gaps between the vines to score a point!</p>
+            <div className="scoreboard">
+              <div>
+                <span className="label">Best</span>
+                <strong>{ui.highScore}</strong>
+              </div>
+            </div>
             <span className="cta">Tap to fly</span>
+            <p className="hint">Follow the glowing arrow to the first gap.</p>
           </div>
         )}
         {ui.phase === 'dead' && (
@@ -270,6 +367,11 @@ const Game: React.FC = () => {
               </div>
             )}
             <p className="hint">Hit a vine or the ground and the flight ends.</p>
+            {ui.nearMisses > 0 && (
+              <p className="hint">
+                Close calls: {ui.nearMisses} — so brave!
+              </p>
+            )}
             <span className="cta">Tap to try again</span>
           </div>
         )}

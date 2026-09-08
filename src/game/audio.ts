@@ -51,3 +51,8 @@ export function playScore() {
 export function playDeath() {
   playTone(300, 0.25, 'triangle', 0.18, 100);
 }
+
+export function playNearMiss() {
+  playTone(880, 0.07, 'square', 0.07);
+  setTimeout(() => playTone(1318, 0.1, 'square', 0.07), 70);
+}
