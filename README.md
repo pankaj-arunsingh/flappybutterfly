@@ -13,7 +13,7 @@ You control a purple butterfly stuck at `x = 108` in a `520x640` canvas world. G
 1. **ready** — Butterfly bobs up and down in the center. Overlay shows:
    > "Flappy Butterfly — Tap, click, or press space to flutter through the flowers."
 2. **playing** — Physics + collision + scoring are active.
-3. **dead** — Butterfly falls to the ground. Overlay shows `Score`, `Best`, medal (if earned), and `Tap to try again`.
+3. **dead** — Butterfly falls to the ground. Overlay shows `Score`, `Best`, medal (if earned), and `Tap to try again`. Tapping immediately restarts into `playing` (no intermediate `ready` screen).
 
 ### Controls
 
@@ -21,7 +21,7 @@ You control a purple butterfly stuck at `x = 108` in a `520x640` canvas world. G
 - **Mouse click** on canvas — flap (`onMouseDown`)
 - **Touch tap** — flap (`onTouchStart`, with `preventDefault` for mobile)
 
-First flap from `ready` → `playing`. Tap after `dead` resets to `ready`.
+First flap from `ready` → `playing`. Tap after `dead` restarts directly into `playing` with a flap.
 
 ### Rules & scoring
 
@@ -56,10 +56,41 @@ All rendering is immediate-mode Canvas 2D at 60fps via `requestAnimationFrame`:
 
 ### Tuning (`src/game/config.ts`)
 
-- `GRAVITY = 0.42`, `FLAP_VELOCITY = -7.4`, `MAX_FALL_SPEED = 11`
-- `PIPE_WIDTH = 64`, `PIPE_GAP = 148`, `PIPE_SPEED = 1.45`, `PIPE_SPACING = 240`
-- `BUTTERFLY_WIDTH = 42`, `BUTTERFLY_HEIGHT = 30`, `HITBOX_INSET = 6` (forgiving hitbox)
+- `GRAVITY = 0.22`, `FLAP_VELOCITY = -6.2`, `MAX_FALL_SPEED = 6.0`
+- `PIPE_WIDTH = 64`, `PIPE_GAP = 200`, `PIPE_SPEED = 1.15`, `PIPE_SPACING = 280`
+- `BUTTERFLY_WIDTH = 42`, `BUTTERFLY_HEIGHT = 30`, `HITBOX_INSET = 10` (forgiving hitbox)
 - 4 pipes alive at once, recycled off-screen
+
+### Difficulty curve (`difficultyAt` / `lerp` in `src/game/logic.ts`)
+
+The opening pipes use **easy-mode** parameters for a near-guaranteed first pass:
+
+| Parameter | Easy (start) | Full (after ramp) |
+|-----------|-------------|-------------------|
+| `PIPE_GAP` | 240px | 200px |
+| `PIPE_SPEED` | 0.9 | 1.15 |
+| `PIPE_SPACING` | 350px | 280px |
+
+Difficulty interpolates linearly over the first `RAMP_PIPES = 7` scored pipes. Each pipe locks in the gap/speed values at spawn time, so the transition is smooth and consistent.
+
+### Audio (`src/game/audio.ts`)
+
+Oscillator-based SFX via the Web Audio API (no asset files):
+
+- **Flap** — quick frequency sweep (whoosh)
+- **Score** — ascending two-tone chime
+- **Death** — soft descending tone (bonk)
+
+AudioContext is created and resumed on the first user gesture to satisfy iOS/Safari autoplay policy.
+
+### Haptics (`navigator.vibrate` in `src/Game.tsx`)
+
+On supported mobile browsers:
+
+- **Score** — 10ms vibration
+- **Death** — 20ms vibration
+
+No haptic on flap. Guarded so desktop browsers are unaffected.
 
 ## Tech stack
 
@@ -81,10 +112,11 @@ src/
   Game.tsx         # game loop, input, overlays, canvas setup
   App.css / index.css
   game/
-    config.ts      # dimensions, physics, speeds
+    config.ts      # dimensions, physics, speeds, easy-mode params
     types.ts       # Phase, Butterfly, Pipe, Cloud, GameState, Medal
-    logic.ts       # flap, stepButterfly, stepPipes, collidesWithWorld, medals, highscore
-    logic.test.ts  # unit tests for medals + collisions
+    logic.ts       # flap, stepButterfly, stepPipes, difficulty ramp, collidesWithWorld, medals, highscore
+    logic.test.ts  # unit tests for medals, collisions, difficulty curve
+    audio.ts       # Web Audio SFX (flap/score/death)
     draw.ts        # all canvas drawing
 ```
 
@@ -143,6 +175,8 @@ Launches Jest in watch mode. Relevant test file: `src/game/logic.test.ts` — co
 - ground collision
 - ceiling safety
 - gap fly-through vs. top-vine hit
+- difficulty-curve ramp (`difficultyAt`, `lerp`)
+- easy-mode pipe parameters on initial pipes
 
 Run once in CI with:
 

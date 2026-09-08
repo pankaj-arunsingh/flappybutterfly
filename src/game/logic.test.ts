@@ -1,6 +1,6 @@
 import { injectable, runWithDi } from 'react-magnetic-di';
-import { medalForScore, collidesWithWorld, createButterfly, createInitialPipes, hitbox, randomGapY } from './logic';
-import { GAME_HEIGHT, GROUND_HEIGHT, PIPE_GAP } from './config';
+import { medalForScore, collidesWithWorld, createButterfly, createInitialPipes, hitbox, randomGapY, difficultyAt, lerp } from './logic';
+import { EASY_PIPE_GAP, EASY_PIPE_SPEED, GAME_HEIGHT, GROUND_HEIGHT, PIPE_GAP, PIPE_SPEED, RAMP_PIPES } from './config';
 import { Pipe } from './types';
 
 describe('medalForScore', () => {
@@ -29,16 +29,16 @@ describe('collidesWithWorld', () => {
   });
 
   it('allows flight through a pipe gap', () => {
-    const pipes: Pipe[] = [{ x: butterfly.x, gapY: 200 + 15, scored: false }];
+    const pipes: Pipe[] = [{ x: butterfly.x, gapY: 200 + 15, gap: PIPE_GAP, speed: PIPE_SPEED, scored: false }];
     const centered = Object.assign({}, butterfly, { y: pipes[0].gapY - 15 });
     const box = hitbox(centered);
-    expect(box.top).toBeGreaterThan(pipes[0].gapY - PIPE_GAP / 2);
-    expect(box.bottom).toBeLessThan(pipes[0].gapY + PIPE_GAP / 2);
+    expect(box.top).toBeGreaterThan(pipes[0].gapY - pipes[0].gap / 2);
+    expect(box.bottom).toBeLessThan(pipes[0].gapY + pipes[0].gap / 2);
     expect(collidesWithWorld(centered, pipes)).toBe(false);
   });
 
   it('detects a hit on the top vine', () => {
-    const pipes: Pipe[] = [{ x: butterfly.x, gapY: 320, scored: false }];
+    const pipes: Pipe[] = [{ x: butterfly.x, gapY: 320, gap: PIPE_GAP, speed: PIPE_SPEED, scored: false }];
     const tooHigh = Object.assign({}, butterfly, { y: 40 });
     expect(collidesWithWorld(tooHigh, pipes)).toBe(true);
   });
@@ -63,5 +63,45 @@ describe('magnetic-di mocking (runWithDi)', () => {
     const result = await runWithDi(() => collidesWithWorld(butterfly, []), [hitboxDi]);
     expect(result).toBe(true);
     expect(hitboxMock).toHaveBeenCalled();
+  });
+});
+
+describe('difficulty curve', () => {
+  it('difficultyAt returns 0 at score 0', () => {
+    expect(difficultyAt(0)).toBe(0);
+  });
+
+  it('difficultyAt returns 1 at score >= RAMP_PIPES', () => {
+    expect(difficultyAt(RAMP_PIPES)).toBe(1);
+    expect(difficultyAt(RAMP_PIPES + 5)).toBe(1);
+  });
+
+  it('difficultyAt interpolates linearly during ramp', () => {
+    const mid = difficultyAt(Math.floor(RAMP_PIPES / 2));
+    expect(mid).toBeGreaterThan(0);
+    expect(mid).toBeLessThan(1);
+  });
+
+  it('lerp interpolates between two values', () => {
+    expect(lerp(0, 100, 0)).toBe(0);
+    expect(lerp(0, 100, 1)).toBe(100);
+    expect(lerp(0, 100, 0.5)).toBe(50);
+  });
+
+  it('createInitialPipes uses easy-mode gap and speed', () => {
+    const pipes = createInitialPipes();
+    expect(pipes).toHaveLength(4);
+    pipes.forEach((p) => {
+      expect(p.gap).toBe(EASY_PIPE_GAP);
+      expect(p.speed).toBe(EASY_PIPE_SPEED);
+    });
+  });
+
+  it('easy-mode gap is wider than full-difficulty gap', () => {
+    expect(EASY_PIPE_GAP).toBeGreaterThan(PIPE_GAP);
+  });
+
+  it('easy-mode speed is slower than full-difficulty speed', () => {
+    expect(EASY_PIPE_SPEED).toBeLessThan(PIPE_SPEED);
   });
 });

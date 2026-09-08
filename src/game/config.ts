@@ -21,6 +21,11 @@ export const PIPE_SPACING = 280;
 export const FIRST_PIPE_X = GAME_WIDTH + 40;
 export const GAP_MARGIN = 80;
 
+export const EASY_PIPE_GAP = 240;
+export const EASY_PIPE_SPEED = 0.9;
+export const EASY_PIPE_SPACING = 350;
+export const RAMP_PIPES = 7;
+
 export const CLOUD_SPEED = 0.18;
 export const GROUND_SPEED = PIPE_SPEED;
 

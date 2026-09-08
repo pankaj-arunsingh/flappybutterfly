@@ -12,6 +12,8 @@ export interface Butterfly {
 export interface Pipe {
   x: number;
   gapY: number;
+  gap: number;
+  speed: number;
   scored: boolean;
 }
 

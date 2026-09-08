@@ -2,6 +2,9 @@ import {
   BUTTERFLY_HEIGHT,
   BUTTERFLY_WIDTH,
   BUTTERFLY_X,
+  EASY_PIPE_GAP,
+  EASY_PIPE_SPACING,
+  EASY_PIPE_SPEED,
   FIRST_PIPE_X,
   FLAP_VELOCITY,
   GAME_HEIGHT,
@@ -16,6 +19,7 @@ import {
   PIPE_SPACING,
   PIPE_SPEED,
   PIPE_WIDTH,
+  RAMP_PIPES,
   READY_BOB_AMPLITUDE,
   READY_BOB_SPEED,
 } from './config';
@@ -46,18 +50,28 @@ export function createButterfly(y: number): Butterfly {
   };
 }
 
-export function randomGapY(): number {
-  const min = GAP_MARGIN + PIPE_GAP / 2;
-  const max = GAME_HEIGHT - GROUND_HEIGHT - GAP_MARGIN - PIPE_GAP / 2;
+export function randomGapY(gap: number = PIPE_GAP): number {
+  const min = GAP_MARGIN + gap / 2;
+  const max = GAME_HEIGHT - GROUND_HEIGHT - GAP_MARGIN - gap / 2;
   return min + Math.random() * (max - min);
+}
+
+export function difficultyAt(score: number): number {
+  return Math.min(1, score / RAMP_PIPES);
+}
+
+export function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
 }
 
 export function createInitialPipes(): Pipe[] {
   const pipes: Pipe[] = [];
   for (let i = 0; i < 4; i += 1) {
     pipes.push({
-      x: FIRST_PIPE_X + i * PIPE_SPACING,
-      gapY: randomGapY(),
+      x: FIRST_PIPE_X + i * EASY_PIPE_SPACING,
+      gapY: randomGapY(EASY_PIPE_GAP),
+      gap: EASY_PIPE_GAP,
+      speed: EASY_PIPE_SPEED,
       scored: false,
     });
   }
@@ -114,8 +128,8 @@ export function collidesWithWorld(butterfly: Butterfly, pipes: Pipe[]): boolean 
       continue;
     }
 
-    const gapTop = pipe.gapY - PIPE_GAP / 2;
-    const gapBottom = pipe.gapY + PIPE_GAP / 2;
+    const gapTop = pipe.gapY - pipe.gap / 2;
+    const gapBottom = pipe.gapY + pipe.gap / 2;
     if (box.top < gapTop || box.bottom > gapBottom) {
       return true;
     }
@@ -124,20 +138,24 @@ export function collidesWithWorld(butterfly: Butterfly, pipes: Pipe[]): boolean 
   return false;
 }
 
-export function stepPipes(pipes: Pipe[], butterfly: Butterfly): { pipes: Pipe[]; scored: number } {
+export function stepPipes(pipes: Pipe[], butterfly: Butterfly, score: number): { pipes: Pipe[]; scored: number } {
   let scored = 0;
   const next: Pipe[] = [];
+  const t = difficultyAt(score);
+  const currentGap = lerp(EASY_PIPE_GAP, PIPE_GAP, t);
+  const currentSpeed = lerp(EASY_PIPE_SPEED, PIPE_SPEED, t);
+  const currentSpacing = lerp(EASY_PIPE_SPACING, PIPE_SPACING, t);
 
   for (let i = 0; i < pipes.length; i += 1) {
     const pipe = pipes[i];
-    const x = pipe.x - PIPE_SPEED;
+    const x = pipe.x - pipe.speed;
     let marked = pipe.scored;
     if (!marked && butterfly.x > x + PIPE_WIDTH) {
       marked = true;
       scored += 1;
     }
     if (x + PIPE_WIDTH > -20) {
-      next.push({ x: x, gapY: pipe.gapY, scored: marked });
+      next.push({ x: x, gapY: pipe.gapY, gap: pipe.gap, speed: pipe.speed, scored: marked });
     }
   }
 
@@ -148,10 +166,12 @@ export function stepPipes(pipes: Pipe[], butterfly: Butterfly): { pipes: Pipe[];
     }
   }
   while (next.length < 4) {
-    farthest += PIPE_SPACING;
+    farthest += currentSpacing;
     next.push({
       x: Math.max(farthest, GAME_WIDTH + PIPE_WIDTH),
-      gapY: randomGapY(),
+      gapY: randomGapY(currentGap),
+      gap: currentGap,
+      speed: currentSpeed,
       scored: false,
     });
   }
