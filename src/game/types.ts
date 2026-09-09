@@ -32,4 +32,26 @@ export interface GameState {
   score: number;
   highScore: number;
   tick: number;
+  particles: Particle[];
+  combo: number;
+  flappedThroughGap: boolean;
+  nearMisses: number;
+  nearMissFlash: number;
+  shake: number;
+  pipesScored: number;
+}
+
+export type ParticleKind = 'spark' | 'trail' | 'popup';
+
+export interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  color: string;
+  size: number;
+  kind: ParticleKind;
+  text?: string;
 }

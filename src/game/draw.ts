@@ -4,9 +4,10 @@ import {
   GAME_HEIGHT,
   GAME_WIDTH,
   GROUND_HEIGHT,
+  NEAR_MISS_FLASH_FRAMES,
   PIPE_WIDTH,
 } from './config';
-import { Butterfly, Cloud, Medal, Pipe } from './types';
+import { Butterfly, Cloud, Medal, Particle, Pipe } from './types';
 
 function roundRect(
   ctx: CanvasRenderingContext2D,
@@ -249,7 +250,94 @@ export function medalColor(medal: Medal): string {
     return '#ffd700';
   }
   if (medal === 'platinum') {
-    return '#e5e4e2';
+    return '#7ee8fa';
   }
   return '#bbb';
+}
+
+export function drawParticles(ctx: CanvasRenderingContext2D, particles: Particle[]) {
+  for (let i = 0; i < particles.length; i += 1) {
+    const p = particles[i];
+    const alpha = Math.max(0, Math.min(1, p.life / p.maxLife));
+    if (p.kind === 'popup' && p.text) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.font = 'bold ' + p.size + 'px "Trebuchet MS", "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#1b4332';
+      ctx.lineWidth = 4;
+      ctx.strokeText(p.text, p.x, p.y);
+      ctx.fillStyle = p.color;
+      ctx.fillText(p.text, p.x, p.y);
+      ctx.restore();
+      continue;
+    }
+    ctx.save();
+    ctx.globalAlpha = p.kind === 'trail' ? alpha * 0.8 : alpha;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * (0.5 + alpha * 0.5), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+export function drawCombo(ctx: CanvasRenderingContext2D, combo: number) {
+  if (combo < 1) {
+    return;
+  }
+  const label = 'COMBO x' + (combo + 1);
+  ctx.save();
+  ctx.font = 'bold 20px "Trebuchet MS", "Segoe UI", sans-serif';
+  ctx.textAlign = 'right';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#5a189a';
+  ctx.lineWidth = 4;
+  ctx.strokeText(label, GAME_WIDTH - 14, 96);
+  ctx.fillStyle = '#ffd166';
+  ctx.fillText(label, GAME_WIDTH - 14, 96);
+  ctx.restore();
+}
+
+export function drawNearMissFlash(ctx: CanvasRenderingContext2D, flash: number) {
+  if (flash <= 0) {
+    return;
+  }
+  const alpha = Math.max(0, Math.min(1, flash / NEAR_MISS_FLASH_FRAMES));
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, alpha * 1.5);
+  ctx.font = 'bold 30px "Trebuchet MS", "Segoe UI", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#1b4332';
+  ctx.lineWidth = 5;
+  const y = GAME_HEIGHT / 2 - 140;
+  ctx.strokeText('Close!', GAME_WIDTH / 2, y);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('Close!', GAME_WIDTH / 2, y);
+  ctx.restore();
+}
+
+export function drawGapGuide(ctx: CanvasRenderingContext2D, pipe: Pipe, tick: number) {
+  const pulse = (Math.sin(tick * 0.12) + 1) / 2;
+  const x = GAME_WIDTH - 34 - pulse * 8;
+  const y = pipe.gapY;
+  ctx.save();
+  ctx.globalAlpha = 0.65 + pulse * 0.35;
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x - 10, y - 14);
+  ctx.lineTo(x + 4, y);
+  ctx.lineTo(x - 10, y + 14);
+  ctx.stroke();
+  ctx.globalAlpha = 0.9;
+  ctx.fillStyle = '#fff3b0';
+  ctx.beginPath();
+  ctx.arc(x + 4, y, 5 + pulse * 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }

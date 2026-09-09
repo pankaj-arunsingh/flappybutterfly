@@ -11,7 +11,8 @@ You control a purple butterfly stuck at `x = 108` in a `520x640` canvas world. G
 ### Game phases (`src/Game.tsx`, `src/game/types.ts`)
 
 1. **ready** — Butterfly bobs up and down in the center. Overlay shows:
-   > "Flappy Butterfly — Tap, click, or press space to flutter through the flowers."
+   > "Flappy Butterfly — Fly through the gaps between the vines to score a point!"
+   plus the best score and a glowing arrow on the canvas pointing at the first gap.
 2. **playing** — Physics + collision + scoring are active.
 3. **dead** — Butterfly falls to the ground. Overlay shows `Score`, `Best`, medal (if earned), and `Tap to try again`. Tapping immediately restarts into `playing` (no intermediate `ready` screen).
 
@@ -25,7 +26,9 @@ First flap from `ready` → `playing`. Tap after `dead` restarts directly into `
 
 ### Rules & scoring
 
-- +1 point each time you fully pass a vine pair (`stepPipes` in `src/game/logic.ts`).
+- +1 point each time you fully pass a vine pair (`stepPipes` in `src/game/logic.ts`), shown as a floating `+N` popup with a gold particle burst.
+- **Combo bonus** — glide through a gap without flapping and the combo grows: the next glide scores +2, then +3, and so on (`COMBO x2`, `x3`, … shown top-right). Flapping inside a gap resets the combo.
+- **Near-miss** — threading a gap within 30px of a vine edge flashes `Close!`, plays a distinct chime, and counts as a "Close call" stat on the game-over screen.
 - Game ends if you hit:
   - the ground (`GAME_HEIGHT - GROUND_HEIGHT`)
   - the top or bottom vine outside the gap
@@ -36,11 +39,11 @@ First flap from `ready` → `playing`. Tap after `dead` restarts directly into `
 
 | Score | Medal |
 |-------|-------|
-| 0-9   | none |
-| 10-19 | bronze `#cd7f32` |
-| 20-29 | silver `#c0c0c0` |
-| 30-39 | gold `#ffd700` |
-| 40+   | platinum `#e5e4e2` |
+| 0-4   | none |
+| 5-9   | bronze `#cd7f32` |
+| 10-19 | silver `#c0c0c0` |
+| 20-34 | gold `#ffd700` |
+| 35+   | platinum `#7ee8fa` |
 
 ### Visuals (`src/game/draw.ts`)
 
@@ -52,7 +55,12 @@ All rendering is immediate-mode Canvas 2D at 60fps via `requestAnimationFrame`:
 - `drawPipe` — green vines with petal flower heads (`pink #ff7eb6` / `yellow #ffd166`) capping each gap edge
 - `drawGround` — scrolling grass/dirt strip (tracks the live pipe speed via `pipeSpeedAt`)
 - `drawButterfly` — animated wings (sine-wave flap), body tilt based on `vy`, dead tilt on game over
+- Death also triggers a brief canvas screen shake (render-only transform; collision is untouched; skipped under `prefers-reduced-motion`)
 - `drawScore` — big outlined score at the top during `playing` / `dead`
+- `drawParticles` — score bursts, flap trails, and floating `+N` popups (capped at 30 live particles for mobile)
+- `drawCombo` — `COMBO xN` counter while gliding without flapping
+- `drawNearMissFlash` — quick `Close!` flash on a tight gap
+- `drawGapGuide` — pulsing arrow toward the first gap on the ready screen
 
 ### Tuning (`src/game/config.ts`)
 
@@ -71,7 +79,7 @@ The opening pipes use **easy-mode** parameters for a near-guaranteed first pass:
 | `PIPE_SPEED` | 0.9 | 1.15 |
 | `PIPE_SPACING` | 350px | 280px |
 
-Difficulty interpolates linearly over the first `RAMP_PIPES = 7` scored pipes. Each pipe locks in the gap/speed values at spawn time, so the transition is smooth and consistent.
+The ramp is driven by the `pipesScored` pipe count (decoupled from the combined score, so combo bonus points don't compress it) and interpolates linearly over the first `RAMP_PIPES = 7` scored pipes. Each pipe locks in the gap/speed values at spawn time, so the transition is smooth and consistent.
 
 ### Audio (`src/game/audio.ts`)
 
@@ -80,6 +88,7 @@ Oscillator-based SFX via the Web Audio API (no asset files):
 - **Flap** — quick frequency sweep (whoosh)
 - **Score** — ascending two-tone chime
 - **Death** — soft descending tone (bonk)
+- **Near-miss** — bright two-blip chime (`playNearMiss`)
 
 AudioContext is created and resumed on the first user gesture to satisfy iOS/Safari autoplay policy.
 
@@ -173,7 +182,7 @@ Launches Jest in watch mode. Relevant test file: `src/game/logic.test.ts` — co
 - ground collision
 - ceiling safety
 - gap fly-through vs. top-vine hit
-- difficulty-curve ramp (`difficultyAt`, `lerp`)
+- difficulty-curve ramp (`difficultyAt`, `lerp`, pipes-scored decoupling)
 - easy-mode pipe parameters on initial pipes
 
 Run once in CI with:
