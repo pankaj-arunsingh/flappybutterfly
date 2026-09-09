@@ -7,7 +7,7 @@ import {
   NEAR_MISS_FLASH_FRAMES,
   PIPE_WIDTH,
 } from './config';
-import { Butterfly, Cloud, Medal, Particle, Pipe } from './types';
+import { Butterfly, Cloud, Medal, Particle, Pipe, Raindrop, Star, Weather } from './types';
 
 function roundRect(
   ctx: CanvasRenderingContext2D,
@@ -27,43 +27,102 @@ function roundRect(
   ctx.closePath();
 }
 
-const skyGradients = new WeakMap<CanvasRenderingContext2D, CanvasGradient>();
+const skyGradients = new WeakMap<CanvasRenderingContext2D, Partial<Record<Weather, CanvasGradient>>>();
 
-export function drawSky(ctx: CanvasRenderingContext2D) {
-  let sky = skyGradients.get(ctx);
+export function drawSky(ctx: CanvasRenderingContext2D, weather: Weather = 'sunny') {
+  let cache = skyGradients.get(ctx);
+  if (!cache) {
+    cache = {};
+    skyGradients.set(ctx, cache);
+  }
+  let sky = cache[weather];
   if (!sky) {
     sky = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
-    sky.addColorStop(0, '#7ec8e8');
-    sky.addColorStop(0.45, '#c5e8f7');
-    sky.addColorStop(0.78, '#f7e7c3');
-    sky.addColorStop(1, '#d7ef9f');
-    skyGradients.set(ctx, sky);
+    if (weather === 'night') {
+      sky.addColorStop(0, '#0b1026');
+      sky.addColorStop(0.45, '#1a2040');
+      sky.addColorStop(0.78, '#2a2a50');
+      sky.addColorStop(1, '#1a1a3a');
+    } else if (weather === 'storm') {
+      sky.addColorStop(0, '#3a3e47');
+      sky.addColorStop(0.45, '#5a5f68');
+      sky.addColorStop(0.78, '#6e737b');
+      sky.addColorStop(1, '#555a62');
+    } else {
+      sky.addColorStop(0, '#7ec8e8');
+      sky.addColorStop(0.45, '#c5e8f7');
+      sky.addColorStop(0.78, '#f7e7c3');
+      sky.addColorStop(1, '#d7ef9f');
+    }
+    cache[weather] = sky;
   }
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 }
 
-export function drawHills(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = '#8bc47a';
-  ctx.beginPath();
-  ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 40);
-  ctx.quadraticCurveTo(120, GAME_HEIGHT - GROUND_HEIGHT - 90, 240, GAME_HEIGHT - GROUND_HEIGHT - 36);
-  ctx.quadraticCurveTo(360, GAME_HEIGHT - GROUND_HEIGHT - 88, GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT - 30);
-  ctx.lineTo(GAME_WIDTH, GAME_HEIGHT);
-  ctx.lineTo(0, GAME_HEIGHT);
-  ctx.fill();
+export function drawHills(ctx: CanvasRenderingContext2D, weather: Weather = 'sunny') {
+  if (weather === 'night') {
+    ctx.fillStyle = '#1a2535';
+    ctx.beginPath();
+    ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 40);
+    ctx.quadraticCurveTo(120, GAME_HEIGHT - GROUND_HEIGHT - 90, 240, GAME_HEIGHT - GROUND_HEIGHT - 36);
+    ctx.quadraticCurveTo(360, GAME_HEIGHT - GROUND_HEIGHT - 88, GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT - 30);
+    ctx.lineTo(GAME_WIDTH, GAME_HEIGHT);
+    ctx.lineTo(0, GAME_HEIGHT);
+    ctx.fill();
 
-  ctx.fillStyle = '#6faf63';
-  ctx.beginPath();
-  ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 10);
-  ctx.quadraticCurveTo(140, GAME_HEIGHT - GROUND_HEIGHT - 55, 280, GAME_HEIGHT - GROUND_HEIGHT - 8);
-  ctx.lineTo(GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT);
-  ctx.lineTo(0, GAME_HEIGHT - GROUND_HEIGHT);
-  ctx.fill();
+    ctx.fillStyle = '#121a28';
+    ctx.beginPath();
+    ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 10);
+    ctx.quadraticCurveTo(140, GAME_HEIGHT - GROUND_HEIGHT - 55, 280, GAME_HEIGHT - GROUND_HEIGHT - 8);
+    ctx.lineTo(GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT);
+    ctx.lineTo(0, GAME_HEIGHT - GROUND_HEIGHT);
+    ctx.fill();
+  } else if (weather === 'storm') {
+    ctx.fillStyle = '#4a5058';
+    ctx.beginPath();
+    ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 40);
+    ctx.quadraticCurveTo(120, GAME_HEIGHT - GROUND_HEIGHT - 90, 240, GAME_HEIGHT - GROUND_HEIGHT - 36);
+    ctx.quadraticCurveTo(360, GAME_HEIGHT - GROUND_HEIGHT - 88, GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT - 30);
+    ctx.lineTo(GAME_WIDTH, GAME_HEIGHT);
+    ctx.lineTo(0, GAME_HEIGHT);
+    ctx.fill();
+
+    ctx.fillStyle = '#3a4048';
+    ctx.beginPath();
+    ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 10);
+    ctx.quadraticCurveTo(140, GAME_HEIGHT - GROUND_HEIGHT - 55, 280, GAME_HEIGHT - GROUND_HEIGHT - 8);
+    ctx.lineTo(GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT);
+    ctx.lineTo(0, GAME_HEIGHT - GROUND_HEIGHT);
+    ctx.fill();
+  } else {
+    ctx.fillStyle = '#8bc47a';
+    ctx.beginPath();
+    ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 40);
+    ctx.quadraticCurveTo(120, GAME_HEIGHT - GROUND_HEIGHT - 90, 240, GAME_HEIGHT - GROUND_HEIGHT - 36);
+    ctx.quadraticCurveTo(360, GAME_HEIGHT - GROUND_HEIGHT - 88, GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT - 30);
+    ctx.lineTo(GAME_WIDTH, GAME_HEIGHT);
+    ctx.lineTo(0, GAME_HEIGHT);
+    ctx.fill();
+
+    ctx.fillStyle = '#6faf63';
+    ctx.beginPath();
+    ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 10);
+    ctx.quadraticCurveTo(140, GAME_HEIGHT - GROUND_HEIGHT - 55, 280, GAME_HEIGHT - GROUND_HEIGHT - 8);
+    ctx.lineTo(GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT);
+    ctx.lineTo(0, GAME_HEIGHT - GROUND_HEIGHT);
+    ctx.fill();
+  }
 }
 
-export function drawCloud(ctx: CanvasRenderingContext2D, cloud: Cloud) {
-  ctx.fillStyle = 'rgba(255,255,255,0.88)';
+export function drawCloud(ctx: CanvasRenderingContext2D, cloud: Cloud, weather: Weather = 'sunny') {
+  if (weather === 'night') {
+    ctx.fillStyle = 'rgba(30,40,60,0.75)';
+  } else if (weather === 'storm') {
+    ctx.fillStyle = 'rgba(55,60,70,0.88)';
+  } else {
+    ctx.fillStyle = 'rgba(255,255,255,0.88)';
+  }
   const x = cloud.x;
   const y = cloud.y;
   const s = cloud.scale;
@@ -141,30 +200,71 @@ export function drawPipe(ctx: CanvasRenderingContext2D, pipe: Pipe) {
   drawFlowerHead(ctx, pipe.x + PIPE_WIDTH / 2, gapBottom + 8, 1);
 }
 
-export function drawGround(ctx: CanvasRenderingContext2D, offset: number) {
+export function drawGround(ctx: CanvasRenderingContext2D, offset: number, weather: Weather = 'sunny') {
   const y = GAME_HEIGHT - GROUND_HEIGHT;
-  ctx.fillStyle = '#c9a227';
-  ctx.fillRect(0, y, GAME_WIDTH, GROUND_HEIGHT);
 
-  ctx.fillStyle = '#6a994e';
-  ctx.fillRect(0, y, GAME_WIDTH, 18);
+  if (weather === 'night') {
+    ctx.fillStyle = '#1a1a2a';
+    ctx.fillRect(0, y, GAME_WIDTH, GROUND_HEIGHT);
+    ctx.fillStyle = '#151520';
+    ctx.fillRect(0, y, GAME_WIDTH, 18);
+    ctx.fillStyle = '#0e0e18';
+    for (let x = -offset % 24; x < GAME_WIDTH; x += 24) {
+      ctx.beginPath();
+      ctx.moveTo(x, y + 18);
+      ctx.lineTo(x + 12, y);
+      ctx.lineTo(x + 24, y + 18);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#1e1e2e';
+    for (let x = -((offset * 0.6) % 16); x < GAME_WIDTH; x += 16) {
+      ctx.fillRect(x, y + 28, 8, 6);
+    }
+    ctx.fillStyle = '#121220';
+    ctx.fillRect(0, y + 18, GAME_WIDTH, 8);
+  } else if (weather === 'storm') {
+    ctx.fillStyle = '#3a3530';
+    ctx.fillRect(0, y, GAME_WIDTH, GROUND_HEIGHT);
+    ctx.fillStyle = '#2e3328';
+    ctx.fillRect(0, y, GAME_WIDTH, 18);
+    ctx.fillStyle = '#22281e';
+    for (let x = -offset % 24; x < GAME_WIDTH; x += 24) {
+      ctx.beginPath();
+      ctx.moveTo(x, y + 18);
+      ctx.lineTo(x + 12, y);
+      ctx.lineTo(x + 24, y + 18);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#444030';
+    for (let x = -((offset * 0.6) % 16); x < GAME_WIDTH; x += 16) {
+      ctx.fillRect(x, y + 28, 8, 6);
+    }
+    ctx.fillStyle = '#303828';
+    ctx.fillRect(0, y + 18, GAME_WIDTH, 8);
+  } else {
+    ctx.fillStyle = '#c9a227';
+    ctx.fillRect(0, y, GAME_WIDTH, GROUND_HEIGHT);
 
-  ctx.fillStyle = '#386641';
-  for (let x = -offset % 24; x < GAME_WIDTH; x += 24) {
-    ctx.beginPath();
-    ctx.moveTo(x, y + 18);
-    ctx.lineTo(x + 12, y);
-    ctx.lineTo(x + 24, y + 18);
-    ctx.fill();
+    ctx.fillStyle = '#6a994e';
+    ctx.fillRect(0, y, GAME_WIDTH, 18);
+
+    ctx.fillStyle = '#386641';
+    for (let x = -offset % 24; x < GAME_WIDTH; x += 24) {
+      ctx.beginPath();
+      ctx.moveTo(x, y + 18);
+      ctx.lineTo(x + 12, y);
+      ctx.lineTo(x + 24, y + 18);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = '#e9c46a';
+    for (let x = -((offset * 0.6) % 16); x < GAME_WIDTH; x += 16) {
+      ctx.fillRect(x, y + 28, 8, 6);
+    }
+
+    ctx.fillStyle = '#80b918';
+    ctx.fillRect(0, y + 18, GAME_WIDTH, 8);
   }
-
-  ctx.fillStyle = '#e9c46a';
-  for (let x = -((offset * 0.6) % 16); x < GAME_WIDTH; x += 16) {
-    ctx.fillRect(x, y + 28, 8, 6);
-  }
-
-  ctx.fillStyle = '#80b918';
-  ctx.fillRect(0, y + 18, GAME_WIDTH, 8);
 }
 
 export function drawButterfly(ctx: CanvasRenderingContext2D, butterfly: Butterfly, dead: boolean) {
@@ -339,5 +439,58 @@ export function drawGapGuide(ctx: CanvasRenderingContext2D, pipe: Pipe, tick: nu
   ctx.beginPath();
   ctx.arc(x + 4, y, 5 + pulse * 2, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
+}
+
+export function drawStars(ctx: CanvasRenderingContext2D, stars: Star[], tick: number, reducedMotion: boolean) {
+  for (let i = 0; i < stars.length; i += 1) {
+    const s = stars[i];
+    const twinkle = reducedMotion ? 0.8 : 0.4 + 0.6 * Math.abs(Math.sin(tick * 0.04 + s.phase));
+    ctx.save();
+    ctx.globalAlpha = twinkle;
+    ctx.fillStyle = '#e8e8f0';
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+export function drawMoon(ctx: CanvasRenderingContext2D) {
+  const cx = GAME_WIDTH - 70;
+  const cy = 65;
+  ctx.save();
+  ctx.fillStyle = '#e8e4d0';
+  ctx.beginPath();
+  ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#0f1528';
+  ctx.beginPath();
+  ctx.arc(cx + 14, cy - 4, 24, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+export function drawRain(ctx: CanvasRenderingContext2D, drops: Raindrop[]) {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(180,200,220,0.5)';
+  ctx.lineWidth = 1.2;
+  ctx.lineCap = 'round';
+  for (let i = 0; i < drops.length; i += 1) {
+    const d = drops[i];
+    ctx.beginPath();
+    ctx.moveTo(d.x, d.y);
+    ctx.lineTo(d.x - d.speed * 0.35 * 2, d.y + d.speed * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+export function drawLightningFlash(ctx: CanvasRenderingContext2D, flash: number) {
+  if (flash <= 0) return;
+  const alpha = Math.min(0.35, flash / 8 * 0.35);
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,' + alpha + ')';
+  ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
   ctx.restore();
 }

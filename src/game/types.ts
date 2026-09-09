@@ -1,5 +1,7 @@
 export type Phase = 'ready' | 'playing' | 'dead';
 
+export type Weather = 'sunny' | 'night' | 'storm';
+
 export type Medal = 'none' | 'bronze' | 'silver' | 'gold' | 'platinum';
 
 export interface Butterfly {
@@ -23,6 +25,19 @@ export interface Cloud {
   scale: number;
 }
 
+export interface Star {
+  x: number;
+  y: number;
+  size: number;
+  phase: number;
+}
+
+export interface Raindrop {
+  x: number;
+  y: number;
+  speed: number;
+}
+
 export interface GameState {
   phase: Phase;
   butterfly: Butterfly;
@@ -39,6 +54,11 @@ export interface GameState {
   nearMissFlash: number;
   shake: number;
   pipesScored: number;
+  weather: Weather;
+  stars: Star[];
+  raindrops: Raindrop[];
+  lightningTimer: number;
+  lightningFlash: number;
 }
 
 export type ParticleKind = 'spark' | 'trail' | 'popup';

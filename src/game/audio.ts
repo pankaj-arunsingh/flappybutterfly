@@ -56,3 +56,20 @@ export function playNearMiss() {
   playTone(880, 0.07, 'square', 0.07);
   setTimeout(() => playTone(1318, 0.1, 'square', 0.07), 70);
 }
+
+export function playThunder() {
+  const ctx = ensureCtx();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(55, ctx.currentTime);
+  osc.frequency.linearRampToValueAtTime(30, ctx.currentTime + 0.6);
+  gain.gain.setValueAtTime(0.14, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.15);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.6);
+}

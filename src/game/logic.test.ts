@@ -1,7 +1,7 @@
 import { injectable, runWithDi } from 'react-magnetic-di';
-import { medalForScore, collidesWithWorld, createButterfly, createInitialPipes, hitbox, randomGapY, difficultyAt, lerp, pipeSpeedAt, stepPipes, isNearMiss, scoreCombo, butterflyOverlapsPipe, spawnScoreBurst, spawnScorePopup, spawnTrail, updateParticles } from './logic';
-import { EASY_PIPE_GAP, EASY_PIPE_SPEED, GAME_HEIGHT, GROUND_HEIGHT, MAX_PARTICLES, PIPE_GAP, PIPE_SPEED, PIPE_WIDTH, RAMP_PIPES } from './config';
-import { Particle, Pipe } from './types';
+import { medalForScore, collidesWithWorld, createButterfly, createInitialPipes, hitbox, randomGapY, difficultyAt, lerp, pipeSpeedAt, stepPipes, isNearMiss, scoreCombo, butterflyOverlapsPipe, spawnScoreBurst, spawnScorePopup, spawnTrail, updateParticles, pickWeather, createStars, createRaindrops, stepRain, stepLightning } from './logic';
+import { EASY_PIPE_GAP, EASY_PIPE_SPEED, GAME_HEIGHT, GAME_WIDTH, GROUND_HEIGHT, LIGHTNING_FLASH_FRAMES, LIGHTNING_MAX_FRAMES, LIGHTNING_MIN_FRAMES, MAX_PARTICLES, PIPE_GAP, PIPE_SPEED, PIPE_WIDTH, RAIN_COUNT, RAMP_PIPES, STAR_COUNT } from './config';
+import { Particle, Pipe, Weather } from './types';
 
 describe('medalForScore', () => {
   it('awards medals at achievable thresholds', () => {
@@ -225,5 +225,80 @@ describe('particles', () => {
       aged = updateParticles(aged);
     }
     expect(aged).toHaveLength(0);
+  });
+});
+
+describe('pickWeather', () => {
+  it('returns a valid weather option', () => {
+    const valid: Weather[] = ['sunny', 'night', 'storm'];
+    for (let i = 0; i < 50; i += 1) {
+      expect(valid).toContain(pickWeather('sunny'));
+    }
+  });
+
+  it('never returns the immediately previous weather', () => {
+    const previous: Weather[] = ['sunny', 'night', 'storm'];
+    previous.forEach((p) => {
+      for (let i = 0; i < 50; i += 1) {
+        expect(pickWeather(p)).not.toBe(p);
+      }
+    });
+  });
+});
+
+describe('createStars', () => {
+  it('creates a bounded set of on-screen stars', () => {
+    const stars = createStars();
+    expect(stars).toHaveLength(STAR_COUNT);
+    stars.forEach((s) => {
+      expect(s.x).toBeGreaterThanOrEqual(0);
+      expect(s.x).toBeLessThanOrEqual(GAME_WIDTH);
+      expect(s.y).toBeGreaterThanOrEqual(0);
+      expect(s.y).toBeLessThanOrEqual(GAME_HEIGHT - 120);
+      expect(s.size).toBeGreaterThan(0);
+      expect(s.phase).toBeGreaterThanOrEqual(0);
+      expect(s.phase).toBeLessThanOrEqual(Math.PI * 2);
+    });
+  });
+});
+
+describe('createRaindrops', () => {
+  it('creates a bounded set of raindrops', () => {
+    const drops = createRaindrops();
+    expect(drops).toHaveLength(RAIN_COUNT);
+    drops.forEach((d) => {
+      expect(d.speed).toBeGreaterThanOrEqual(4);
+      expect(d.speed).toBeLessThanOrEqual(8);
+    });
+  });
+});
+
+describe('stepRain', () => {
+  it('moves rain down and left, wrapping past the bottom edge', () => {
+    const drops = createRaindrops();
+    const moved = stepRain(drops);
+    expect(moved).toHaveLength(drops.length);
+    moved.forEach((m) => {
+      expect(m.y).toBeLessThanOrEqual(GAME_HEIGHT + 10);
+      expect(m.x).toBeGreaterThanOrEqual(-40);
+    });
+  });
+});
+
+describe('stepLightning', () => {
+  it('counts down an active flash and fires a new strike after the timer', () => {
+    const flashActive = stepLightning(LIGHTNING_MAX_FRAMES, 5, false);
+    expect(flashActive.flash).toBe(4);
+    expect(flashActive.timer).toBe(LIGHTNING_MAX_FRAMES);
+
+    const result = stepLightning(0, 0, false);
+    expect(result.flash).toBe(LIGHTNING_FLASH_FRAMES);
+    expect(result.timer).toBeGreaterThanOrEqual(LIGHTNING_MIN_FRAMES);
+    expect(result.timer).toBeLessThanOrEqual(LIGHTNING_MAX_FRAMES);
+  });
+
+  it('shortens the flash under reduced motion', () => {
+    const result = stepLightning(0, 0, true);
+    expect(result.flash).toBe(2);
   });
 });

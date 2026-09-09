@@ -37,3 +37,9 @@ export const NEAR_MISS_FLASH_FRAMES = 45;
 export const SHAKE_FRAMES = 18;
 
 export const HIGH_SCORE_KEY = 'flappybutterfly-highscore';
+
+export const STAR_COUNT = 50;
+export const RAIN_COUNT = 120;
+export const LIGHTNING_MIN_FRAMES = 180;
+export const LIGHTNING_MAX_FRAMES = 420;
+export const LIGHTNING_FLASH_FRAMES = 8;

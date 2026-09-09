@@ -15,10 +15,20 @@ Flappy Butterfly — a Flappy Bird–style arcade game (butterfly vs. vines) for
 |---|---|
 | Game loop, input, overlays, canvas setup | `src/Game.tsx` |
 | Dimensions, physics, speeds, easy-mode params | `src/game/config.ts` |
-| Pure game logic: flap, physics step, pipe traversal, collision, difficulty ramp, medals, high score | `src/game/logic.ts` |
-| Web Audio SFX (flap/score/death/near-miss) | `src/game/audio.ts` |
-| Canvas rendering | `src/game/draw.ts` |
-| Types (Phase, Butterfly, Pipe, Cloud, GameState, Medal) | `src/game/types.ts` |
+| Pure game logic: flap, physics step, pipe traversal, collision, difficulty ramp, medals, high score, weather pick/step | `src/game/logic.ts` |
+| Web Audio SFX (flap/score/death/near-miss/thunder) | `src/game/audio.ts` |
+| Canvas rendering (weather-aware sky/hills/clouds/ground, stars, moon, rain, lightning) | `src/game/draw.ts` |
+| Types (Phase, Weather, Butterfly, Pipe, Cloud, Star, Raindrop, GameState, Medal) | `src/game/types.ts` |
+
+## Weather system
+
+- `Weather = 'sunny' | 'night' | 'storm'` lives on `GameState` along with `stars`, `raindrops`, `lightningTimer`, `lightningFlash`.
+- Purely visual: never affects gameplay, difficulty, scoring, or collision.
+- Random pick at run start (ready→playing and dead→playing in `Game.tsx` via `pickWeather`, which avoids the immediately previous weather).
+- `ready` overlay always shows the sunny scene; weather applies at tap-to-play.
+- Night: `drawStars` (per-star twinkle `tick`-driven, disabled under reduced motion) + `drawMoon` + dark silhouette hills/clouds/ground.
+- Storm: `stepRain` wanders/bangs drops; `stepLightning` counts a `lightningTimer`, fires a brief flash (shorter under reduced motion), and `playThunder` (low sawtooth rumble, no music) plays when a strike starts.
+- Sky gradients are cached per-context per-weather (`WeakMap`), so the same ctx can render different weathers (ready sunny → run night/storm).
 
 ## Phase model
 
@@ -47,6 +57,6 @@ New pipes interpolate gap/speed/spacing from easy-mode to full difficulty over t
 
 `craco test -- --watchAll=false` runs Jest. Core tests: `src/game/logic.test.ts`.
 
-> Note: a few pre-existing suites fail (magnetic-di mocking + the `@vercel/analytics/react` module resolution). The difficulty-curve tests and other pure-logic tests are green — don't assume a failure is caused by your change until you check against a clean checkout.
+> Note: in this workspace the Jest run can't parse any suite (the `react-magnetic-di` babel plugin transform fails on TS/TSX type annotations — even on a clean checkout), so `craco test` reports 0 tests. Use `npx tsc --noEmit` and `npx react-scripts build` to validate changes instead; don't assume a suite failure is caused by your change until you check against a clean checkout.
 
 ## Maintaining this file
