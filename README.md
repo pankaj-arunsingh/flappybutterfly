@@ -79,7 +79,7 @@ The opening pipes use **easy-mode** parameters for a near-guaranteed first pass:
 | `PIPE_SPEED` | 0.9 | 1.15 |
 | `PIPE_SPACING` | 350px | 280px |
 
-Difficulty interpolates linearly over the first `RAMP_PIPES = 7` scored pipes. Each pipe locks in the gap/speed values at spawn time, so the transition is smooth and consistent.
+The ramp is driven by the `pipesScored` pipe count (decoupled from the combined score, so combo bonus points don't compress it) and interpolates linearly over the first `RAMP_PIPES = 7` scored pipes. Each pipe locks in the gap/speed values at spawn time, so the transition is smooth and consistent.
 
 ### Audio (`src/game/audio.ts`)
 
@@ -182,7 +182,7 @@ Launches Jest in watch mode. Relevant test file: `src/game/logic.test.ts` — co
 - ground collision
 - ceiling safety
 - gap fly-through vs. top-vine hit
-- difficulty-curve ramp (`difficultyAt`, `lerp`)
+- difficulty-curve ramp (`difficultyAt`, `lerp`, pipes-scored decoupling)
 - easy-mode pipe parameters on initial pipes
 
 Run once in CI with:

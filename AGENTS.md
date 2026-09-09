@@ -41,7 +41,7 @@ Flappy Butterfly — a Flappy Bird–style arcade game (butterfly vs. vines) for
 
 ## Difficulty curve
 
-New pipes interpolate gap/speed/spacing from easy-mode to full difficulty over the first `RAMP_PIPES = 7` scored pipes via `difficultyAt(score)` and `lerp`. Each pipe locks its `gap`/`speed` at spawn. Keep `randomGapY(gap)` consistent with the per-pipe gap so collision and drawing stay aligned.
+New pipes interpolate gap/speed/spacing from easy-mode to full difficulty over the first `RAMP_PIPES = 7` scored pipes via `difficultyAt(pipesScored)` and `lerp`. The ramp reads the `pipesScored` pipe count, decoupled from `score` so combo bonus points never compress the ramp. Each pipe locks its `gap`/`speed` at spawn. Keep `randomGapY(gap)` consistent with the per-pipe gap so collision and drawing stay aligned.
 
 ## Testing
 
