@@ -114,6 +114,33 @@ describe('difficulty curve', () => {
     expect(mid).toBeGreaterThan(EASY_PIPE_SPEED);
     expect(mid).toBeLessThan(PIPE_SPEED);
   });
+
+  function spawnedPipe(pipesScored: number): { gap: number; speed: number } {
+    const butterfly = createButterfly(300);
+    const scoredPipe: Pipe = { x: butterfly.x - PIPE_WIDTH - 1, gapY: 300, gap: PIPE_GAP, speed: PIPE_SPEED, scored: false };
+    const result = stepPipes([scoredPipe], butterfly, pipesScored);
+    const spawned = result.pipes[result.pipes.length - 1];
+    return { gap: spawned.gap, speed: spawned.speed };
+  }
+
+  it('interpolates new pipes from the pipes-scored count, not the combo-inflated score', () => {
+    // 3 pipes passed while comboing gives a combined score of 9 (2+3+4), but the
+    // ramp input is the pipes-scored count, so difficulty is still only partial:
+    // a whisper beyond easy, never the full PIPE_GAP/PIPE_SPEED the score would imply.
+    const partial = spawnedPipe(3);
+    expect(partial.gap).toBeGreaterThan(PIPE_GAP);
+    expect(partial.gap).toBeLessThan(EASY_PIPE_GAP);
+    expect(partial.speed).toBeGreaterThan(EASY_PIPE_SPEED);
+    expect(partial.speed).toBeLessThan(PIPE_SPEED);
+  });
+
+  it('reaches full difficulty exactly at RAMP_PIPES pipes', () => {
+    expect(spawnedPipe(RAMP_PIPES)).toEqual({ gap: PIPE_GAP, speed: PIPE_SPEED });
+  });
+
+  it('holds full difficulty for pipe 8 onwards', () => {
+    expect(spawnedPipe(RAMP_PIPES + 1)).toEqual({ gap: PIPE_GAP, speed: PIPE_SPEED });
+  });
 });
 
 describe('near-miss detection', () => {

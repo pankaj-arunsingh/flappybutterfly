@@ -58,16 +58,16 @@ export function randomGapY(gap: number = PIPE_GAP): number {
   return min + Math.random() * (max - min);
 }
 
-export function difficultyAt(score: number): number {
-  return Math.min(1, score / RAMP_PIPES);
+export function difficultyAt(pipesScored: number): number {
+  return Math.min(1, pipesScored / RAMP_PIPES);
 }
 
 export function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
 
-export function pipeSpeedAt(score: number): number {
-  return lerp(EASY_PIPE_SPEED, PIPE_SPEED, difficultyAt(score));
+export function pipeSpeedAt(pipesScored: number): number {
+  return lerp(EASY_PIPE_SPEED, PIPE_SPEED, difficultyAt(pipesScored));
 }
 
 export function createInitialPipes(): Pipe[] {
@@ -144,13 +144,13 @@ export function collidesWithWorld(butterfly: Butterfly, pipes: Pipe[]): boolean 
   return false;
 }
 
-export function stepPipes(pipes: Pipe[], butterfly: Butterfly, score: number): { pipes: Pipe[]; scored: number; nearMiss: boolean } {
+export function stepPipes(pipes: Pipe[], butterfly: Butterfly, pipesScored: number): { pipes: Pipe[]; scored: number; nearMiss: boolean } {
   let scored = 0;
   let nearMiss = false;
   const next: Pipe[] = [];
-  const currentGap = lerp(EASY_PIPE_GAP, PIPE_GAP, difficultyAt(score));
-  const currentSpeed = pipeSpeedAt(score);
-  const currentSpacing = lerp(EASY_PIPE_SPACING, PIPE_SPACING, difficultyAt(score));
+  const currentGap = lerp(EASY_PIPE_GAP, PIPE_GAP, difficultyAt(pipesScored));
+  const currentSpeed = pipeSpeedAt(pipesScored);
+  const currentSpacing = lerp(EASY_PIPE_SPACING, PIPE_SPACING, difficultyAt(pipesScored));
 
   for (let i = 0; i < pipes.length; i += 1) {
     const pipe = pipes[i];

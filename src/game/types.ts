@@ -38,6 +38,7 @@ export interface GameState {
   nearMisses: number;
   nearMissFlash: number;
   shake: number;
+  pipesScored: number;
 }
 
 export type ParticleKind = 'spark' | 'trail' | 'popup';

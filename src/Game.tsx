@@ -68,6 +68,7 @@ function createState(phase: Phase, highScore: number): GameState {
     nearMisses: 0,
     nearMissFlash: 0,
     shake: 0,
+    pipesScored: 0,
   };
 }
 
@@ -145,7 +146,7 @@ const Game: React.FC = () => {
         }
         return { x: x, y: cloud.y, scale: cloud.scale };
       });
-      state.groundOffset = (state.groundOffset + pipeSpeedAt(state.score)) % 48;
+      state.groundOffset = (state.groundOffset + pipeSpeedAt(state.pipesScored)) % 48;
       state.particles = updateParticles(state.particles);
       if (state.nearMissFlash > 0) {
         state.nearMissFlash -= 1;
@@ -156,7 +157,7 @@ const Game: React.FC = () => {
 
       if (state.phase === 'playing') {
         state.butterfly = stepButterfly(state.butterfly, true);
-        const moved = stepPipes(state.pipes, state.butterfly, state.score);
+        const moved = stepPipes(state.pipes, state.butterfly, state.pipesScored);
         state.pipes = moved.pipes;
         if (moved.scored > 0) {
           let bonus = 0;
@@ -166,6 +167,7 @@ const Game: React.FC = () => {
             bonus += comboResult.bonus;
           }
           const points = moved.scored + bonus;
+          state.pipesScored += moved.scored;
           state.score += points;
           state.particles = spawnScoreBurst(
             state.particles,
