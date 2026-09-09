@@ -60,59 +60,31 @@ export function drawSky(ctx: CanvasRenderingContext2D, weather: Weather = 'sunny
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 }
 
+const HILLS_PALETTE: Record<Weather, { far: string; near: string }> = {
+  sunny: { far: '#8bc47a', near: '#6faf63' },
+  night: { far: '#1a2535', near: '#121a28' },
+  storm: { far: '#4a5058', near: '#3a4048' },
+};
+
 export function drawHills(ctx: CanvasRenderingContext2D, weather: Weather = 'sunny') {
-  if (weather === 'night') {
-    ctx.fillStyle = '#1a2535';
-    ctx.beginPath();
-    ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 40);
-    ctx.quadraticCurveTo(120, GAME_HEIGHT - GROUND_HEIGHT - 90, 240, GAME_HEIGHT - GROUND_HEIGHT - 36);
-    ctx.quadraticCurveTo(360, GAME_HEIGHT - GROUND_HEIGHT - 88, GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT - 30);
-    ctx.lineTo(GAME_WIDTH, GAME_HEIGHT);
-    ctx.lineTo(0, GAME_HEIGHT);
-    ctx.fill();
+  const palette = HILLS_PALETTE[weather];
 
-    ctx.fillStyle = '#121a28';
-    ctx.beginPath();
-    ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 10);
-    ctx.quadraticCurveTo(140, GAME_HEIGHT - GROUND_HEIGHT - 55, 280, GAME_HEIGHT - GROUND_HEIGHT - 8);
-    ctx.lineTo(GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT);
-    ctx.lineTo(0, GAME_HEIGHT - GROUND_HEIGHT);
-    ctx.fill();
-  } else if (weather === 'storm') {
-    ctx.fillStyle = '#4a5058';
-    ctx.beginPath();
-    ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 40);
-    ctx.quadraticCurveTo(120, GAME_HEIGHT - GROUND_HEIGHT - 90, 240, GAME_HEIGHT - GROUND_HEIGHT - 36);
-    ctx.quadraticCurveTo(360, GAME_HEIGHT - GROUND_HEIGHT - 88, GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT - 30);
-    ctx.lineTo(GAME_WIDTH, GAME_HEIGHT);
-    ctx.lineTo(0, GAME_HEIGHT);
-    ctx.fill();
+  ctx.fillStyle = palette.far;
+  ctx.beginPath();
+  ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 40);
+  ctx.quadraticCurveTo(120, GAME_HEIGHT - GROUND_HEIGHT - 90, 240, GAME_HEIGHT - GROUND_HEIGHT - 36);
+  ctx.quadraticCurveTo(360, GAME_HEIGHT - GROUND_HEIGHT - 88, GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT - 30);
+  ctx.lineTo(GAME_WIDTH, GAME_HEIGHT);
+  ctx.lineTo(0, GAME_HEIGHT);
+  ctx.fill();
 
-    ctx.fillStyle = '#3a4048';
-    ctx.beginPath();
-    ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 10);
-    ctx.quadraticCurveTo(140, GAME_HEIGHT - GROUND_HEIGHT - 55, 280, GAME_HEIGHT - GROUND_HEIGHT - 8);
-    ctx.lineTo(GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT);
-    ctx.lineTo(0, GAME_HEIGHT - GROUND_HEIGHT);
-    ctx.fill();
-  } else {
-    ctx.fillStyle = '#8bc47a';
-    ctx.beginPath();
-    ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 40);
-    ctx.quadraticCurveTo(120, GAME_HEIGHT - GROUND_HEIGHT - 90, 240, GAME_HEIGHT - GROUND_HEIGHT - 36);
-    ctx.quadraticCurveTo(360, GAME_HEIGHT - GROUND_HEIGHT - 88, GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT - 30);
-    ctx.lineTo(GAME_WIDTH, GAME_HEIGHT);
-    ctx.lineTo(0, GAME_HEIGHT);
-    ctx.fill();
-
-    ctx.fillStyle = '#6faf63';
-    ctx.beginPath();
-    ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 10);
-    ctx.quadraticCurveTo(140, GAME_HEIGHT - GROUND_HEIGHT - 55, 280, GAME_HEIGHT - GROUND_HEIGHT - 8);
-    ctx.lineTo(GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT);
-    ctx.lineTo(0, GAME_HEIGHT - GROUND_HEIGHT);
-    ctx.fill();
-  }
+  ctx.fillStyle = palette.near;
+  ctx.beginPath();
+  ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 10);
+  ctx.quadraticCurveTo(140, GAME_HEIGHT - GROUND_HEIGHT - 55, 280, GAME_HEIGHT - GROUND_HEIGHT - 8);
+  ctx.lineTo(GAME_WIDTH, GAME_HEIGHT - GROUND_HEIGHT);
+  ctx.lineTo(0, GAME_HEIGHT - GROUND_HEIGHT);
+  ctx.fill();
 }
 
 export function drawCloud(ctx: CanvasRenderingContext2D, cloud: Cloud, weather: Weather = 'sunny') {
@@ -200,71 +172,38 @@ export function drawPipe(ctx: CanvasRenderingContext2D, pipe: Pipe) {
   drawFlowerHead(ctx, pipe.x + PIPE_WIDTH / 2, gapBottom + 8, 1);
 }
 
+const GROUND_PALETTE: Record<Weather, { base: string; topStrip: string; spikes: string; pebbles: string; lip: string }> = {
+  sunny: { base: '#c9a227', topStrip: '#6a994e', spikes: '#386641', pebbles: '#e9c46a', lip: '#80b918' },
+  night: { base: '#1a1a2a', topStrip: '#151520', spikes: '#0e0e18', pebbles: '#1e1e2e', lip: '#121220' },
+  storm: { base: '#3a3530', topStrip: '#2e3328', spikes: '#22281e', pebbles: '#444030', lip: '#303828' },
+};
+
 export function drawGround(ctx: CanvasRenderingContext2D, offset: number, weather: Weather = 'sunny') {
   const y = GAME_HEIGHT - GROUND_HEIGHT;
+  const palette = GROUND_PALETTE[weather];
 
-  if (weather === 'night') {
-    ctx.fillStyle = '#1a1a2a';
-    ctx.fillRect(0, y, GAME_WIDTH, GROUND_HEIGHT);
-    ctx.fillStyle = '#151520';
-    ctx.fillRect(0, y, GAME_WIDTH, 18);
-    ctx.fillStyle = '#0e0e18';
-    for (let x = -offset % 24; x < GAME_WIDTH; x += 24) {
-      ctx.beginPath();
-      ctx.moveTo(x, y + 18);
-      ctx.lineTo(x + 12, y);
-      ctx.lineTo(x + 24, y + 18);
-      ctx.fill();
-    }
-    ctx.fillStyle = '#1e1e2e';
-    for (let x = -((offset * 0.6) % 16); x < GAME_WIDTH; x += 16) {
-      ctx.fillRect(x, y + 28, 8, 6);
-    }
-    ctx.fillStyle = '#121220';
-    ctx.fillRect(0, y + 18, GAME_WIDTH, 8);
-  } else if (weather === 'storm') {
-    ctx.fillStyle = '#3a3530';
-    ctx.fillRect(0, y, GAME_WIDTH, GROUND_HEIGHT);
-    ctx.fillStyle = '#2e3328';
-    ctx.fillRect(0, y, GAME_WIDTH, 18);
-    ctx.fillStyle = '#22281e';
-    for (let x = -offset % 24; x < GAME_WIDTH; x += 24) {
-      ctx.beginPath();
-      ctx.moveTo(x, y + 18);
-      ctx.lineTo(x + 12, y);
-      ctx.lineTo(x + 24, y + 18);
-      ctx.fill();
-    }
-    ctx.fillStyle = '#444030';
-    for (let x = -((offset * 0.6) % 16); x < GAME_WIDTH; x += 16) {
-      ctx.fillRect(x, y + 28, 8, 6);
-    }
-    ctx.fillStyle = '#303828';
-    ctx.fillRect(0, y + 18, GAME_WIDTH, 8);
-  } else {
-    ctx.fillStyle = '#c9a227';
-    ctx.fillRect(0, y, GAME_WIDTH, GROUND_HEIGHT);
+  ctx.fillStyle = palette.base;
+  ctx.fillRect(0, y, GAME_WIDTH, GROUND_HEIGHT);
 
-    ctx.fillStyle = '#6a994e';
-    ctx.fillRect(0, y, GAME_WIDTH, 18);
+  ctx.fillStyle = palette.topStrip;
+  ctx.fillRect(0, y, GAME_WIDTH, 18);
 
-    ctx.fillStyle = '#386641';
-    for (let x = -offset % 24; x < GAME_WIDTH; x += 24) {
-      ctx.beginPath();
-      ctx.moveTo(x, y + 18);
-      ctx.lineTo(x + 12, y);
-      ctx.lineTo(x + 24, y + 18);
-      ctx.fill();
-    }
-
-    ctx.fillStyle = '#e9c46a';
-    for (let x = -((offset * 0.6) % 16); x < GAME_WIDTH; x += 16) {
-      ctx.fillRect(x, y + 28, 8, 6);
-    }
-
-    ctx.fillStyle = '#80b918';
-    ctx.fillRect(0, y + 18, GAME_WIDTH, 8);
+  ctx.fillStyle = palette.spikes;
+  for (let x = -offset % 24; x < GAME_WIDTH; x += 24) {
+    ctx.beginPath();
+    ctx.moveTo(x, y + 18);
+    ctx.lineTo(x + 12, y);
+    ctx.lineTo(x + 24, y + 18);
+    ctx.fill();
   }
+
+  ctx.fillStyle = palette.pebbles;
+  for (let x = -((offset * 0.6) % 16); x < GAME_WIDTH; x += 16) {
+    ctx.fillRect(x, y + 28, 8, 6);
+  }
+
+  ctx.fillStyle = palette.lip;
+  ctx.fillRect(0, y + 18, GAME_WIDTH, 8);
 }
 
 export function drawButterfly(ctx: CanvasRenderingContext2D, butterfly: Butterfly, dead: boolean) {
