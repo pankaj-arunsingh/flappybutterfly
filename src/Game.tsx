@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   playDeath,
   playFlap,
+  playApplause,
   playNearMiss,
   playScore,
   playThunder,
@@ -23,6 +24,8 @@ import {
   drawGround,
   drawHills,
   drawLightningFlash,
+  drawConfetti,
+  drawMedal,
   drawMoon,
   drawNearMissFlash,
   drawParticles,
@@ -42,6 +45,11 @@ import {
   createStars,
   flap,
   medalForScore,
+  isNewBest,
+  spawnConfetti,
+  spawnFallingMedal,
+  stepCelebration,
+  CELEBRATORY_WORDS,
   pickWeather,
   pipeSpeedAt,
   readHighScore,
@@ -89,6 +97,7 @@ function createState(phase: Phase, highScore: number, weather: Weather = 'sunny'
     raindrops: weather === 'storm' ? createRaindrops() : [],
     lightningTimer: weather === 'storm' ? 120 : 0,
     lightningFlash: 0,
+    celebration: { confetti: [], medal: null, newBestWord: null },
   };
 }
 
@@ -116,6 +125,7 @@ const Game: React.FC = () => {
     highScore: 0,
     nearMisses: 0,
     weather: 'sunny' as Weather,
+    newBestWord: null as string | null,
   });
 
   const syncUi = useCallback((state: GameState) => {
@@ -125,6 +135,7 @@ const Game: React.FC = () => {
       highScore: state.highScore,
       nearMisses: state.nearMisses,
       weather: state.weather,
+      newBestWord: state.celebration.newBestWord,
     });
   }, []);
 
@@ -170,6 +181,7 @@ const Game: React.FC = () => {
       });
       state.groundOffset = (state.groundOffset + pipeSpeedAt(state.pipesScored)) % 48;
       state.particles = updateParticles(state.particles);
+      state.celebration = stepCelebration(state.celebration, REDUCED_MOTION);
       if (state.nearMissFlash > 0) {
         state.nearMissFlash -= 1;
       }
@@ -228,9 +240,22 @@ const Game: React.FC = () => {
           if (!REDUCED_MOTION) {
             state.shake = SHAKE_FRAMES;
           }
-          if (state.score > state.highScore) {
+          const oldBest = state.highScore;
+          if (isNewBest(state.score, oldBest)) {
             state.highScore = state.score;
             writeHighScore(state.highScore);
+            state.celebration = {
+              confetti: REDUCED_MOTION ? [] : spawnConfetti(50),
+              medal: medalForScore(state.score) === 'none' ? null : spawnFallingMedal(medalForScore(state.score)),
+              newBestWord: CELEBRATORY_WORDS[Math.floor(Math.random() * CELEBRATORY_WORDS.length)],
+            };
+            playApplause();
+          } else if (medalForScore(state.score) !== 'none') {
+            state.celebration = {
+              confetti: REDUCED_MOTION ? [] : spawnConfetti(),
+              medal: spawnFallingMedal(medalForScore(state.score)),
+              newBestWord: null,
+            };
           }
           syncUi(state);
         }
@@ -284,6 +309,8 @@ const Game: React.FC = () => {
         drawLightningFlash(ctx, state.lightningFlash);
       }
       drawParticles(ctx, state.particles);
+      drawConfetti(ctx, state.celebration.confetti);
+      if (state.celebration.medal) drawMedal(ctx, state.celebration.medal);
       if (state.phase === 'playing' || state.phase === 'dead') {
         drawScore(ctx, state.score);
         drawCombo(ctx, state.combo);
@@ -406,6 +433,12 @@ const Game: React.FC = () => {
         {ui.phase === 'dead' && (
           <div className={`game-overlay game-overlay-over game-overlay-${ui.weather}`}>
             <h2>Game over</h2>
+            {ui.newBestWord && (
+              <div className="new-best" aria-live="polite">
+                <strong>{ui.newBestWord}</strong>
+                <span>New Best!</span>
+              </div>
+            )}
             <div className="scoreboard">
               <div>
                 <span className="label">Score</span>

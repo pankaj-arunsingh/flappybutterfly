@@ -73,3 +73,24 @@ export function playThunder() {
   osc.start(ctx.currentTime);
   osc.stop(ctx.currentTime + 0.6);
 }
+
+export function playApplause() {
+  const ctx = ensureCtx();
+  if (!ctx) return;
+  for (let i = 0; i < 7; i += 1) {
+    const start = ctx.currentTime + i * 0.11;
+    const buffer = ctx.createBuffer(1, ctx.sampleRate * 0.07, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let j = 0; j < data.length; j += 1) data[j] = Math.random() * 2 - 1;
+    const source = ctx.createBufferSource();
+    const gain = ctx.createGain();
+    source.buffer = buffer;
+    gain.gain.setValueAtTime(0.12, start);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.07);
+    source.connect(gain);
+    gain.connect(ctx.destination);
+    source.start(start);
+  }
+  playTone(523, 0.18, 'sine', 0.16);
+  setTimeout(() => playTone(784, 0.22, 'sine', 0.16), 120);
+}
