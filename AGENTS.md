@@ -24,7 +24,7 @@ Flappy Butterfly — a Flappy Bird–style arcade game (butterfly vs. vines) for
 
 - `Weather = 'sunny' | 'night' | 'storm'` lives on `GameState` along with `stars`, `raindrops`, `lightningTimer`, `lightningFlash`.
 - Purely visual: never affects gameplay, difficulty, scoring, or collision.
-- Random pick at run start (ready→playing and dead→playing in `Game.tsx` via `pickWeather`, which avoids the immediately previous weather).
+- Random pick at run start (ready→playing and dead→playing in `Game.tsx` via `pickWeather`; the first run allows all three weathers, then later runs avoid the immediately previous weather).
 - `ready` overlay always shows the sunny scene; weather applies at tap-to-play.
 - Night: `drawStars` (per-star twinkle `tick`-driven, disabled under reduced motion) + `drawMoon` + dark silhouette hills/clouds/ground.
 - Storm: `stepRain` wanders/bangs drops; `stepLightning` counts a `lightningTimer`, fires a brief flash (shorter under reduced motion), and `playThunder` (low sawtooth rumble, no music) plays when a strike starts.
