@@ -1,6 +1,6 @@
 let audioCtx: AudioContext | null = null;
 
-function ensureCtx(): AudioContext | null {
+export function ensureCtx(): AudioContext | null {
   if (typeof window === 'undefined' || typeof window.AudioContext === 'undefined') {
     return null;
   }

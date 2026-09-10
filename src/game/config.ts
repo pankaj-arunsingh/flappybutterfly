@@ -37,6 +37,8 @@ export const NEAR_MISS_FLASH_FRAMES = 45;
 export const SHAKE_FRAMES = 18;
 
 export const HIGH_SCORE_KEY = 'flappybutterfly-highscore';
+export const MUSIC_KEY = 'flappybutterfly-music-muted';
+export const MUSIC_DEFAULT_MUTED = false;
 
 export const STAR_COUNT = 50;
 export const RAIN_COUNT = 120;

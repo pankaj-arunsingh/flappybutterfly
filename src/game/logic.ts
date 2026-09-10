@@ -34,6 +34,7 @@ import {
   CELEBRATION_PALETTE,
 } from './config';
 import { Butterfly, Celebration, Confetti, FallingMedal, Medal, Particle, Pipe, Raindrop, Star, Weather } from './types';
+import { MUSIC_TRACKS, MusicTrack } from './music';
 
 export const CELEBRATORY_WORDS = ['Yippee!', 'Hurray!', 'Awesome!', 'Wahoo!', 'Fantastic!'];
 
@@ -387,6 +388,11 @@ export function pickWeather(previous?: Weather): Weather {
   const choices = previous
     ? WEATHER_OPTIONS.filter(function (w) { return w !== previous; })
     : WEATHER_OPTIONS;
+  return choices[Math.floor(Math.random() * choices.length)];
+}
+
+export function pickTrack(weather: Weather): MusicTrack {
+  const choices = MUSIC_TRACKS.filter(function (track) { return track.weather === weather; });
   return choices[Math.floor(Math.random() * choices.length)];
 }
 

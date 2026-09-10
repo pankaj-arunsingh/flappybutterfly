@@ -1,5 +1,5 @@
 import { injectable, runWithDi } from 'react-magnetic-di';
-import { medalForScore, collidesWithWorld, createButterfly, createInitialPipes, hitbox, randomGapY, difficultyAt, lerp, pipeSpeedAt, stepPipes, isNearMiss, scoreCombo, butterflyOverlapsPipe, spawnScoreBurst, spawnScorePopup, spawnTrail, updateParticles, pickWeather, createStars, createRaindrops, stepRain, stepLightning, spawnConfetti, spawnFallingMedal, stepCelebration, isNewBest } from './logic';
+import { medalForScore, collidesWithWorld, createButterfly, createInitialPipes, hitbox, randomGapY, difficultyAt, lerp, pipeSpeedAt, stepPipes, isNearMiss, scoreCombo, butterflyOverlapsPipe, spawnScoreBurst, spawnScorePopup, spawnTrail, updateParticles, pickWeather, pickTrack, createStars, createRaindrops, stepRain, stepLightning, spawnConfetti, spawnFallingMedal, stepCelebration, isNewBest } from './logic';
 import { EASY_PIPE_GAP, EASY_PIPE_SPEED, GAME_HEIGHT, GAME_WIDTH, GROUND_HEIGHT, LIGHTNING_FLASH_FRAMES, LIGHTNING_MAX_FRAMES, LIGHTNING_MIN_FRAMES, MAX_PARTICLES, PIPE_GAP, PIPE_SPEED, PIPE_WIDTH, RAIN_COUNT, RAMP_PIPES, STAR_COUNT } from './config';
 import { Particle, Pipe, Weather } from './types';
 
@@ -243,6 +243,14 @@ describe('pickWeather', () => {
         expect(pickWeather(p)).not.toBe(p);
       }
     });
+  });
+});
+
+describe('pickTrack', () => {
+  it('selects music from the requested weather mood', () => {
+    expect(pickTrack('sunny').weather).toBe('sunny');
+    expect(pickTrack('night').weather).toBe('night');
+    expect(pickTrack('storm').weather).toBe('storm');
   });
 });
 
