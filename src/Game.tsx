@@ -7,6 +7,7 @@ import {
   playScore,
   playThunder,
 } from './game/audio';
+import { isMusicMuted, setMusicGameOver, setMusicMuted, startMusic, stopMusic } from './game/music';
 import {
   BUTTERFLY_HEIGHT,
   BUTTERFLY_WIDTH,
@@ -126,17 +127,19 @@ const Game: React.FC = () => {
     nearMisses: 0,
     weather: 'sunny' as Weather,
     newBestWord: null as string | null,
+    musicMuted: isMusicMuted(),
   });
 
   const syncUi = useCallback((state: GameState) => {
-    setUi({
+    setUi((previous) => ({
       phase: state.phase,
       score: state.score,
       highScore: state.highScore,
       nearMisses: state.nearMisses,
       weather: state.weather,
       newBestWord: state.celebration.newBestWord,
-    });
+      musicMuted: previous.musicMuted,
+    }));
   }, []);
 
   useEffect(() => {
@@ -235,6 +238,7 @@ const Game: React.FC = () => {
         }
         if (collidesWithWorld(state.butterfly, state.pipes)) {
           state.phase = 'dead';
+          setMusicGameOver();
           playDeath();
           navigator.vibrate?.(20);
           if (!REDUCED_MOTION) {
@@ -350,6 +354,7 @@ const Game: React.FC = () => {
     frame = window.requestAnimationFrame(loop);
     return () => {
       window.cancelAnimationFrame(frame);
+      stopMusic();
     };
   }, [syncUi]);
 
@@ -366,6 +371,7 @@ const Game: React.FC = () => {
       state.butterfly = flap(state.butterfly);
       state.particles = spawnTrail(state.particles, state.butterfly);
       playFlap();
+      startMusic(weather);
       syncUi(state);
       return;
     }
@@ -384,8 +390,15 @@ const Game: React.FC = () => {
       stateRef.current.butterfly
     );
     playFlap();
+    startMusic(weather);
     syncUi(stateRef.current);
   }, [syncUi]);
+
+  const toggleMusic = useCallback(() => {
+    const next = !ui.musicMuted;
+    setMusicMuted(next);
+    setUi((previous) => Object.assign({}, previous, { musicMuted: next }));
+  }, [ui.musicMuted]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -404,6 +417,17 @@ const Game: React.FC = () => {
   return (
     <div className="game-shell">
       <div className="game-frame">
+        <button
+          type="button"
+          className="music-toggle"
+          aria-label={ui.musicMuted ? 'Turn music on' : 'Mute music'}
+          aria-pressed={ui.musicMuted}
+          onMouseDown={(event) => event.stopPropagation()}
+          onTouchStart={(event) => event.stopPropagation()}
+          onClick={toggleMusic}
+        >
+          {ui.musicMuted ? '\u{1F507}' : '\u{1F50A}'}
+        </button>
         <canvas
           ref={canvasRef}
           className="game-canvas"
