@@ -6,8 +6,9 @@ import {
   GROUND_HEIGHT,
   NEAR_MISS_FLASH_FRAMES,
   PIPE_WIDTH,
+  CELEBRATION_MEDAL_RADIUS,
 } from './config';
-import { Butterfly, Cloud, Medal, Particle, Pipe, Raindrop, Star, Weather } from './types';
+import { Butterfly, Cloud, Confetti, FallingMedal, Medal, Particle, Pipe, Raindrop, Star, Weather } from './types';
 
 function roundRect(
   ctx: CanvasRenderingContext2D,
@@ -292,6 +293,54 @@ export function medalColor(medal: Medal): string {
     return '#7ee8fa';
   }
   return '#bbb';
+}
+
+export function drawConfetti(ctx: CanvasRenderingContext2D, confetti: Confetti[]) {
+  confetti.forEach((piece) => {
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, piece.life / 50);
+    ctx.translate(piece.x, piece.y);
+    ctx.rotate(piece.rotation);
+    ctx.fillStyle = piece.color;
+    ctx.fillRect(-piece.width / 2, -piece.height / 2, piece.width, piece.height);
+    ctx.restore();
+  });
+}
+
+export function drawMedal(ctx: CanvasRenderingContext2D, falling: FallingMedal) {
+  const radius = CELEBRATION_MEDAL_RADIUS;
+  const color = medalColor(falling.medal);
+  ctx.save();
+  ctx.translate(falling.x, falling.y);
+  ctx.rotate(falling.rotation);
+  ctx.fillStyle = '#f15bb5';
+  ctx.beginPath();
+  ctx.moveTo(-28, -radius + 8);
+  ctx.lineTo(-10, -radius - 58);
+  ctx.lineTo(0, -radius + 4);
+  ctx.lineTo(10, -radius - 58);
+  ctx.lineTo(28, -radius + 8);
+  ctx.closePath();
+  ctx.fill();
+  const gradient = ctx.createRadialGradient(-14, -16, 4, 0, 0, radius);
+  gradient.addColorStop(0, '#fff3b0');
+  gradient.addColorStop(0.35, color);
+  gradient.addColorStop(1, '#7b2cbf');
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#fff3b0';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(0, 0, radius - 8, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.fillStyle = '#fffef6';
+  ctx.font = 'bold 30px "Trebuchet MS", "Segoe UI", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(falling.medal === 'platinum' ? '★' : '✦', 0, 2);
+  ctx.restore();
 }
 
 export function drawParticles(ctx: CanvasRenderingContext2D, particles: Particle[]) {

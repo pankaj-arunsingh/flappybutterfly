@@ -14,7 +14,7 @@ You control a purple butterfly stuck at `x = 108` in a `520x640` canvas world. G
    > "Flappy Butterfly — Fly through the gaps between the vines to score a point!"
    plus the best score and a glowing arrow on the canvas pointing at the first gap.
 2. **playing** — Physics + collision + scoring are active.
-3. **dead** — Butterfly falls to the ground. Overlay shows `Score`, `Best`, medal (if earned), and `Tap to try again`. Tapping immediately restarts into `playing` (no intermediate `ready` screen).
+3. **dead** — Butterfly falls to the ground. Overlay shows `Score`, `Best`, and `Tap to try again`; an earned medal falls onto the canvas as a celebration. A new best also adds confetti, applause, and a random celebratory word. Tapping immediately restarts into `playing` (no intermediate `ready` screen).
 
 ### Controls
 
@@ -61,6 +61,7 @@ All rendering is immediate-mode Canvas 2D at 60fps via `requestAnimationFrame`:
 - `drawCombo` — `COMBO xN` counter while gliding without flapping
 - `drawNearMissFlash` — quick `Close!` flash on a tight gap
 - `drawGapGuide` — pulsing arrow toward the first gap on the ready screen
+- `drawConfetti` / `drawMedal` — colorful celebration particles and the earned medal with ribbon
 
 Runs randomly select one of three visual-only weather conditions when play
 starts: sunny, night (stars and moon), or storm (rain and occasional
@@ -95,6 +96,7 @@ Oscillator-based SFX via the Web Audio API (no asset files):
 - **Death** — soft descending tone (bonk)
 - **Near-miss** — bright two-blip chime (`playNearMiss`)
 - **Thunder** — low rumble when storm lightning strikes (`playThunder`)
+- **Applause** — noise bursts and an ascending fanfare for a new best (`playApplause`)
 
 AudioContext is created and resumed on the first user gesture to satisfy iOS/Safari autoplay policy.
 
@@ -128,11 +130,11 @@ src/
   App.css / index.css
   game/
     config.ts      # dimensions, physics, speeds, easy-mode params
-    types.ts       # Phase, Weather, Butterfly, Pipe, Cloud, Star, Raindrop, GameState, Medal
-    logic.ts       # flap, stepButterfly, stepPipes, weather, difficulty ramp, collidesWithWorld, medals, highscore
+    types.ts       # Phase, Weather, Butterfly, Pipe, Cloud, Star, Raindrop, GameState, Medal, celebration state
+    logic.ts       # flap, stepButterfly, stepPipes, weather, difficulty ramp, collidesWithWorld, medals, celebration, highscore
     logic.test.ts  # unit tests for medals, collisions, difficulty curve
-    audio.ts       # Web Audio SFX (flap/score/death/near-miss/thunder)
-    draw.ts        # weather-aware canvas drawing
+    audio.ts       # Web Audio SFX (flap/score/death/near-miss/thunder/applause)
+    draw.ts        # weather-aware canvas and medal celebration drawing
 ```
 
 ## Prerequisites

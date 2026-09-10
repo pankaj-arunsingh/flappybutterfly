@@ -29,8 +29,13 @@ import {
   READY_BOB_AMPLITUDE,
   READY_BOB_SPEED,
   STAR_COUNT,
+  CELEBRATION_CONFETTI_COUNT,
+  CELEBRATION_MEDAL_REST_Y,
+  CELEBRATION_PALETTE,
 } from './config';
-import { Butterfly, Medal, Particle, Pipe, Raindrop, Star, Weather } from './types';
+import { Butterfly, Celebration, Confetti, FallingMedal, Medal, Particle, Pipe, Raindrop, Star, Weather } from './types';
+
+export const CELEBRATORY_WORDS = ['Yippee!', 'Hurray!', 'Awesome!', 'Wahoo!', 'Fantastic!'];
 
 export function medalForScore(score: number): Medal {
   if (score >= 35) {
@@ -277,6 +282,62 @@ export function spawnTrail(particles: Particle[], butterfly: Butterfly): Particl
     });
   }
   return capParticles(particles.concat(trail));
+}
+
+export function isNewBest(score: number, oldBest: number): boolean {
+  return score > oldBest;
+}
+
+export function spawnConfetti(count: number = CELEBRATION_CONFETTI_COUNT): Confetti[] {
+  const confetti: Confetti[] = [];
+  for (let i = 0; i < count; i += 1) {
+    confetti.push({
+      x: GAME_WIDTH / 2 + (Math.random() - 0.5) * 220,
+      y: 80 + Math.random() * 120,
+      vx: (Math.random() - 0.5) * 5,
+      vy: -3 - Math.random() * 5,
+      rotation: Math.random() * Math.PI,
+      spin: (Math.random() - 0.5) * 0.35,
+      width: 4 + Math.random() * 5,
+      height: 10 + Math.random() * 12,
+      life: 150 + Math.floor(Math.random() * 80),
+      color: CELEBRATION_PALETTE[i % CELEBRATION_PALETTE.length],
+    });
+  }
+  return confetti;
+}
+
+export function spawnFallingMedal(medal: Medal): FallingMedal {
+  return { medal, x: GAME_WIDTH / 2, y: -70, vy: 0, rotation: 0, sway: 0, settled: false };
+}
+
+export function stepCelebration(celebration: Celebration, reducedMotion: boolean): Celebration {
+  const confetti = reducedMotion ? [] : celebration.confetti.flatMap((piece) => {
+    if (piece.life <= 0) return [];
+    return [Object.assign({}, piece, {
+      x: piece.x + piece.vx,
+      y: piece.y + piece.vy,
+      vy: piece.vy + 0.12,
+      rotation: piece.rotation + piece.spin,
+      life: piece.life - 1,
+    })];
+  });
+  if (!celebration.medal || celebration.medal.settled) return Object.assign({}, celebration, { confetti });
+  const current = celebration.medal;
+  const vy = Math.min(10, current.vy + 0.45);
+  const y = current.y + vy;
+  const settled = y >= CELEBRATION_MEDAL_REST_Y;
+  return Object.assign({}, celebration, {
+    confetti,
+    medal: Object.assign({}, current, {
+      x: GAME_WIDTH / 2 + Math.sin(current.sway) * 38,
+      y: settled ? CELEBRATION_MEDAL_REST_Y : y,
+      vy: settled ? 0 : vy,
+      rotation: settled ? 0 : Math.sin(current.sway) * 0.18,
+      sway: current.sway + 0.12,
+      settled,
+    }),
+  });
 }
 
 export function updateParticles(particles: Particle[]): Particle[] {

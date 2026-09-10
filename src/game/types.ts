@@ -59,6 +59,36 @@ export interface GameState {
   raindrops: Raindrop[];
   lightningTimer: number;
   lightningFlash: number;
+  celebration: Celebration;
+}
+
+export interface Confetti {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  rotation: number;
+  spin: number;
+  width: number;
+  height: number;
+  life: number;
+  color: string;
+}
+
+export interface FallingMedal {
+  medal: Medal;
+  x: number;
+  y: number;
+  vy: number;
+  rotation: number;
+  sway: number;
+  settled: boolean;
+}
+
+export interface Celebration {
+  confetti: Confetti[];
+  medal: FallingMedal | null;
+  newBestWord: string | null;
 }
 
 export type ParticleKind = 'spark' | 'trail' | 'popup';

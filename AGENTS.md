@@ -15,10 +15,10 @@ Flappy Butterfly — a Flappy Bird–style arcade game (butterfly vs. vines) for
 |---|---|
 | Game loop, input, overlays, canvas setup | `src/Game.tsx` |
 | Dimensions, physics, speeds, easy-mode params | `src/game/config.ts` |
-| Pure game logic: flap, physics step, pipe traversal, collision, difficulty ramp, medals, high score, weather pick/step | `src/game/logic.ts` |
-| Web Audio SFX (flap/score/death/near-miss/thunder) | `src/game/audio.ts` |
-| Canvas rendering (weather-aware sky/hills/clouds/ground, stars, moon, rain, lightning) | `src/game/draw.ts` |
-| Types (Phase, Weather, Butterfly, Pipe, Cloud, Star, Raindrop, GameState, Medal) | `src/game/types.ts` |
+| Pure game logic: flap, physics step, pipe traversal, collision, difficulty ramp, medals, celebration, high score, weather pick/step | `src/game/logic.ts` |
+| Web Audio SFX (flap/score/death/near-miss/thunder/applause) | `src/game/audio.ts` |
+| Canvas rendering (weather-aware sky/hills/clouds/ground, stars, moon, rain, lightning, medal celebrations) | `src/game/draw.ts` |
+| Types (Phase, Weather, Butterfly, Pipe, Cloud, Star, Raindrop, GameState, Medal, celebration state) | `src/game/types.ts` |
 
 ## Weather system
 
@@ -48,6 +48,7 @@ Flappy Butterfly — a Flappy Bird–style arcade game (butterfly vs. vines) for
 - Particles live in `GameState.particles` (`Particle` in `types.ts`, helpers in `logic.ts`, `drawParticles` in `draw.ts`); score popups are a particle kind. Cap: `MAX_PARTICLES = 30`.
 - Death screen shake is render-only in `Game.tsx` (canvas translate, `SHAKE_FRAMES = 18`); never touches collision; skipped under `prefers-reduced-motion`.
 - Ready overlay explains the goal, shows Best, and `drawGapGuide` points at the first gap.
+- Earned medals fall onto the canvas with ribbon and confetti; a new best adds extra confetti, applause, and a random celebratory word.
 
 ## Difficulty curve
 

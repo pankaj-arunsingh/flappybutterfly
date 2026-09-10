@@ -1,5 +1,5 @@
 import { injectable, runWithDi } from 'react-magnetic-di';
-import { medalForScore, collidesWithWorld, createButterfly, createInitialPipes, hitbox, randomGapY, difficultyAt, lerp, pipeSpeedAt, stepPipes, isNearMiss, scoreCombo, butterflyOverlapsPipe, spawnScoreBurst, spawnScorePopup, spawnTrail, updateParticles, pickWeather, createStars, createRaindrops, stepRain, stepLightning } from './logic';
+import { medalForScore, collidesWithWorld, createButterfly, createInitialPipes, hitbox, randomGapY, difficultyAt, lerp, pipeSpeedAt, stepPipes, isNearMiss, scoreCombo, butterflyOverlapsPipe, spawnScoreBurst, spawnScorePopup, spawnTrail, updateParticles, pickWeather, createStars, createRaindrops, stepRain, stepLightning, spawnConfetti, spawnFallingMedal, stepCelebration, isNewBest } from './logic';
 import { EASY_PIPE_GAP, EASY_PIPE_SPEED, GAME_HEIGHT, GAME_WIDTH, GROUND_HEIGHT, LIGHTNING_FLASH_FRAMES, LIGHTNING_MAX_FRAMES, LIGHTNING_MIN_FRAMES, MAX_PARTICLES, PIPE_GAP, PIPE_SPEED, PIPE_WIDTH, RAIN_COUNT, RAMP_PIPES, STAR_COUNT } from './config';
 import { Particle, Pipe, Weather } from './types';
 
@@ -243,6 +243,28 @@ describe('pickWeather', () => {
         expect(pickWeather(p)).not.toBe(p);
       }
     });
+  });
+});
+
+describe('celebration', () => {
+  it('spawns colorful confetti and a medal', () => {
+    expect(spawnConfetti()).toHaveLength(42);
+    expect(spawnFallingMedal('gold').y).toBeLessThan(0);
+  });
+
+  it('settles the medal while moving confetti', () => {
+    const medal = spawnFallingMedal('gold');
+    const celebration = { confetti: spawnConfetti(1), medal, newBestWord: null };
+    const stepped = stepCelebration(celebration, false);
+    expect(stepped.medal?.y).toBeGreaterThan(medal.y);
+    expect(stepped.confetti[0].y).not.toBe(celebration.confetti[0].y);
+  });
+
+  it('removes confetti under reduced motion and detects a new best', () => {
+    const celebration = { confetti: spawnConfetti(1), medal: spawnFallingMedal('gold'), newBestWord: 'Yippee!' };
+    expect(stepCelebration(celebration, true).confetti).toHaveLength(0);
+    expect(isNewBest(11, 10)).toBe(true);
+    expect(isNewBest(10, 10)).toBe(false);
   });
 });
 
