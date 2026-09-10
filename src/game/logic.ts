@@ -322,8 +322,10 @@ export function writeHighScore(score: number): void {
 
 const WEATHER_OPTIONS: Weather[] = ['sunny', 'night', 'storm'];
 
-export function pickWeather(previous: Weather): Weather {
-  const choices = WEATHER_OPTIONS.filter(function (w) { return w !== previous; });
+export function pickWeather(previous?: Weather): Weather {
+  const choices = previous
+    ? WEATHER_OPTIONS.filter(function (w) { return w !== previous; })
+    : WEATHER_OPTIONS;
   return choices[Math.floor(Math.random() * choices.length)];
 }
 

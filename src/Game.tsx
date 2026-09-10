@@ -115,6 +115,7 @@ const Game: React.FC = () => {
     score: 0,
     highScore: 0,
     nearMisses: 0,
+    weather: 'sunny' as Weather,
   });
 
   const syncUi = useCallback((state: GameState) => {
@@ -123,6 +124,7 @@ const Game: React.FC = () => {
       score: state.score,
       highScore: state.highScore,
       nearMisses: state.nearMisses,
+      weather: state.weather,
     });
   }, []);
 
@@ -259,13 +261,13 @@ const Game: React.FC = () => {
         );
       }
       drawSky(ctx, state.weather);
-      state.clouds.forEach(function (cloud) {
-        drawCloud(ctx, cloud, state.weather);
-      });
       if (state.weather === 'night') {
         drawStars(ctx, state.stars, state.tick, REDUCED_MOTION);
         drawMoon(ctx);
       }
+      state.clouds.forEach(function (cloud) {
+        drawCloud(ctx, cloud, state.weather);
+      });
       drawHills(ctx, state.weather);
       state.pipes.forEach(function (pipe) {
         drawPipe(ctx, pipe);
@@ -324,7 +326,7 @@ const Game: React.FC = () => {
   const onFlap = useCallback(() => {
     const state = stateRef.current;
     if (state.phase === 'ready') {
-      const weather = pickWeather('sunny');
+      const weather = pickWeather();
       state.weather = weather;
       state.stars = weather === 'night' ? createStars() : [];
       state.raindrops = weather === 'storm' ? createRaindrops() : [];
@@ -402,7 +404,7 @@ const Game: React.FC = () => {
           </div>
         )}
         {ui.phase === 'dead' && (
-          <div className="game-overlay game-overlay-over">
+          <div className={`game-overlay game-overlay-over game-overlay-${ui.weather}`}>
             <h2>Game over</h2>
             <div className="scoreboard">
               <div>
