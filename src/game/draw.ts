@@ -7,7 +7,7 @@ import {
   NEAR_MISS_FLASH_FRAMES,
   PIPE_WIDTH,
 } from './config';
-import { Butterfly, Cloud, Medal, Particle, Pipe } from './types';
+import { Butterfly, Cloud, Medal, Particle, Pipe, Raindrop, Star, Weather } from './types';
 
 function roundRect(
   ctx: CanvasRenderingContext2D,
@@ -27,24 +27,49 @@ function roundRect(
   ctx.closePath();
 }
 
-const skyGradients = new WeakMap<CanvasRenderingContext2D, CanvasGradient>();
+const skyGradients = new WeakMap<CanvasRenderingContext2D, Partial<Record<Weather, CanvasGradient>>>();
 
-export function drawSky(ctx: CanvasRenderingContext2D) {
-  let sky = skyGradients.get(ctx);
+export function drawSky(ctx: CanvasRenderingContext2D, weather: Weather = 'sunny') {
+  let cache = skyGradients.get(ctx);
+  if (!cache) {
+    cache = {};
+    skyGradients.set(ctx, cache);
+  }
+  let sky = cache[weather];
   if (!sky) {
     sky = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
-    sky.addColorStop(0, '#7ec8e8');
-    sky.addColorStop(0.45, '#c5e8f7');
-    sky.addColorStop(0.78, '#f7e7c3');
-    sky.addColorStop(1, '#d7ef9f');
-    skyGradients.set(ctx, sky);
+    if (weather === 'night') {
+      sky.addColorStop(0, '#0b1026');
+      sky.addColorStop(0.45, '#1a2040');
+      sky.addColorStop(0.78, '#2a2a50');
+      sky.addColorStop(1, '#1a1a3a');
+    } else if (weather === 'storm') {
+      sky.addColorStop(0, '#3a3e47');
+      sky.addColorStop(0.45, '#5a5f68');
+      sky.addColorStop(0.78, '#6e737b');
+      sky.addColorStop(1, '#555a62');
+    } else {
+      sky.addColorStop(0, '#7ec8e8');
+      sky.addColorStop(0.45, '#c5e8f7');
+      sky.addColorStop(0.78, '#f7e7c3');
+      sky.addColorStop(1, '#d7ef9f');
+    }
+    cache[weather] = sky;
   }
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 }
 
-export function drawHills(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = '#8bc47a';
+const HILLS_PALETTE: Record<Weather, { far: string; near: string }> = {
+  sunny: { far: '#8bc47a', near: '#6faf63' },
+  night: { far: '#1a2535', near: '#121a28' },
+  storm: { far: '#4a5058', near: '#3a4048' },
+};
+
+export function drawHills(ctx: CanvasRenderingContext2D, weather: Weather = 'sunny') {
+  const palette = HILLS_PALETTE[weather];
+
+  ctx.fillStyle = palette.far;
   ctx.beginPath();
   ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 40);
   ctx.quadraticCurveTo(120, GAME_HEIGHT - GROUND_HEIGHT - 90, 240, GAME_HEIGHT - GROUND_HEIGHT - 36);
@@ -53,7 +78,7 @@ export function drawHills(ctx: CanvasRenderingContext2D) {
   ctx.lineTo(0, GAME_HEIGHT);
   ctx.fill();
 
-  ctx.fillStyle = '#6faf63';
+  ctx.fillStyle = palette.near;
   ctx.beginPath();
   ctx.moveTo(0, GAME_HEIGHT - GROUND_HEIGHT - 10);
   ctx.quadraticCurveTo(140, GAME_HEIGHT - GROUND_HEIGHT - 55, 280, GAME_HEIGHT - GROUND_HEIGHT - 8);
@@ -62,8 +87,14 @@ export function drawHills(ctx: CanvasRenderingContext2D) {
   ctx.fill();
 }
 
-export function drawCloud(ctx: CanvasRenderingContext2D, cloud: Cloud) {
-  ctx.fillStyle = 'rgba(255,255,255,0.88)';
+export function drawCloud(ctx: CanvasRenderingContext2D, cloud: Cloud, weather: Weather = 'sunny') {
+  if (weather === 'night') {
+    ctx.fillStyle = 'rgba(30,40,60,0.75)';
+  } else if (weather === 'storm') {
+    ctx.fillStyle = 'rgba(55,60,70,0.88)';
+  } else {
+    ctx.fillStyle = 'rgba(255,255,255,0.88)';
+  }
   const x = cloud.x;
   const y = cloud.y;
   const s = cloud.scale;
@@ -141,15 +172,23 @@ export function drawPipe(ctx: CanvasRenderingContext2D, pipe: Pipe) {
   drawFlowerHead(ctx, pipe.x + PIPE_WIDTH / 2, gapBottom + 8, 1);
 }
 
-export function drawGround(ctx: CanvasRenderingContext2D, offset: number) {
+const GROUND_PALETTE: Record<Weather, { base: string; topStrip: string; spikes: string; pebbles: string; lip: string }> = {
+  sunny: { base: '#c9a227', topStrip: '#6a994e', spikes: '#386641', pebbles: '#e9c46a', lip: '#80b918' },
+  night: { base: '#1a1a2a', topStrip: '#151520', spikes: '#0e0e18', pebbles: '#1e1e2e', lip: '#121220' },
+  storm: { base: '#3a3530', topStrip: '#2e3328', spikes: '#22281e', pebbles: '#444030', lip: '#303828' },
+};
+
+export function drawGround(ctx: CanvasRenderingContext2D, offset: number, weather: Weather = 'sunny') {
   const y = GAME_HEIGHT - GROUND_HEIGHT;
-  ctx.fillStyle = '#c9a227';
+  const palette = GROUND_PALETTE[weather];
+
+  ctx.fillStyle = palette.base;
   ctx.fillRect(0, y, GAME_WIDTH, GROUND_HEIGHT);
 
-  ctx.fillStyle = '#6a994e';
+  ctx.fillStyle = palette.topStrip;
   ctx.fillRect(0, y, GAME_WIDTH, 18);
 
-  ctx.fillStyle = '#386641';
+  ctx.fillStyle = palette.spikes;
   for (let x = -offset % 24; x < GAME_WIDTH; x += 24) {
     ctx.beginPath();
     ctx.moveTo(x, y + 18);
@@ -158,12 +197,12 @@ export function drawGround(ctx: CanvasRenderingContext2D, offset: number) {
     ctx.fill();
   }
 
-  ctx.fillStyle = '#e9c46a';
+  ctx.fillStyle = palette.pebbles;
   for (let x = -((offset * 0.6) % 16); x < GAME_WIDTH; x += 16) {
     ctx.fillRect(x, y + 28, 8, 6);
   }
 
-  ctx.fillStyle = '#80b918';
+  ctx.fillStyle = palette.lip;
   ctx.fillRect(0, y + 18, GAME_WIDTH, 8);
 }
 
@@ -339,5 +378,58 @@ export function drawGapGuide(ctx: CanvasRenderingContext2D, pipe: Pipe, tick: nu
   ctx.beginPath();
   ctx.arc(x + 4, y, 5 + pulse * 2, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
+}
+
+export function drawStars(ctx: CanvasRenderingContext2D, stars: Star[], tick: number, reducedMotion: boolean) {
+  for (let i = 0; i < stars.length; i += 1) {
+    const s = stars[i];
+    const twinkle = reducedMotion ? 0.8 : 0.4 + 0.6 * Math.abs(Math.sin(tick * 0.04 + s.phase));
+    ctx.save();
+    ctx.globalAlpha = twinkle;
+    ctx.fillStyle = '#e8e8f0';
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+export function drawMoon(ctx: CanvasRenderingContext2D) {
+  const cx = GAME_WIDTH - 70;
+  const cy = 65;
+  ctx.save();
+  ctx.fillStyle = '#e8e4d0';
+  ctx.beginPath();
+  ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#0f1528';
+  ctx.beginPath();
+  ctx.arc(cx + 14, cy - 4, 24, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+export function drawRain(ctx: CanvasRenderingContext2D, drops: Raindrop[]) {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(180,200,220,0.5)';
+  ctx.lineWidth = 1.2;
+  ctx.lineCap = 'round';
+  for (let i = 0; i < drops.length; i += 1) {
+    const d = drops[i];
+    ctx.beginPath();
+    ctx.moveTo(d.x, d.y);
+    ctx.lineTo(d.x - d.speed * 0.35 * 2, d.y + d.speed * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+export function drawLightningFlash(ctx: CanvasRenderingContext2D, flash: number) {
+  if (flash <= 0) return;
+  const alpha = Math.min(0.35, flash / 8 * 0.35);
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,' + alpha + ')';
+  ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
   ctx.restore();
 }

@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { playDeath, playFlap, playNearMiss, playScore } from './game/audio';
+import {
+  playDeath,
+  playFlap,
+  playNearMiss,
+  playScore,
+  playThunder,
+} from './game/audio';
 import {
   BUTTERFLY_HEIGHT,
   BUTTERFLY_WIDTH,
@@ -16,11 +22,15 @@ import {
   drawGapGuide,
   drawGround,
   drawHills,
+  drawLightningFlash,
+  drawMoon,
   drawNearMissFlash,
   drawParticles,
   drawPipe,
+  drawRain,
   drawScore,
   drawSky,
+  drawStars,
   medalColor,
 } from './game/draw';
 import {
@@ -28,8 +38,11 @@ import {
   collidesWithWorld,
   createButterfly,
   createInitialPipes,
+  createRaindrops,
+  createStars,
   flap,
   medalForScore,
+  pickWeather,
   pipeSpeedAt,
   readHighScore,
   scoreCombo,
@@ -37,11 +50,13 @@ import {
   spawnScorePopup,
   spawnTrail,
   stepButterfly,
+  stepLightning,
   stepPipes,
+  stepRain,
   updateParticles,
   writeHighScore,
 } from './game/logic';
-import { Cloud, GameState, Phase } from './game/types';
+import { Cloud, GameState, Phase, Weather } from './game/types';
 
 function createClouds(): Cloud[] {
   return [
@@ -52,7 +67,7 @@ function createClouds(): Cloud[] {
   ];
 }
 
-function createState(phase: Phase, highScore: number): GameState {
+function createState(phase: Phase, highScore: number, weather: Weather = 'sunny'): GameState {
   return {
     phase: phase,
     butterfly: createButterfly(GAME_HEIGHT / 2 - 40),
@@ -69,6 +84,11 @@ function createState(phase: Phase, highScore: number): GameState {
     nearMissFlash: 0,
     shake: 0,
     pipesScored: 0,
+    weather: weather,
+    stars: weather === 'night' ? createStars() : [],
+    raindrops: weather === 'storm' ? createRaindrops() : [],
+    lightningTimer: weather === 'storm' ? 120 : 0,
+    lightningFlash: 0,
   };
 }
 
@@ -95,6 +115,7 @@ const Game: React.FC = () => {
     score: 0,
     highScore: 0,
     nearMisses: 0,
+    weather: 'sunny' as Weather,
   });
 
   const syncUi = useCallback((state: GameState) => {
@@ -103,6 +124,7 @@ const Game: React.FC = () => {
       score: state.score,
       highScore: state.highScore,
       nearMisses: state.nearMisses,
+      weather: state.weather,
     });
   }, []);
 
@@ -153,6 +175,21 @@ const Game: React.FC = () => {
       }
       if (state.shake > 0) {
         state.shake -= 1;
+      }
+
+      if (state.weather === 'storm') {
+        state.raindrops = stepRain(state.raindrops);
+        const previousFlash = state.lightningFlash;
+        const lightning = stepLightning(
+          state.lightningTimer,
+          state.lightningFlash,
+          REDUCED_MOTION
+        );
+        state.lightningTimer = lightning.timer;
+        state.lightningFlash = lightning.flash;
+        if (previousFlash === 0 && lightning.flash > 0) {
+          playThunder();
+        }
       }
 
       if (state.phase === 'playing') {
@@ -223,19 +260,29 @@ const Game: React.FC = () => {
           (Math.random() * 2 - 1) * 4 * magnitude
         );
       }
-      drawSky(ctx);
+      drawSky(ctx, state.weather);
+      if (state.weather === 'night') {
+        drawStars(ctx, state.stars, state.tick, REDUCED_MOTION);
+        drawMoon(ctx);
+      }
       state.clouds.forEach(function (cloud) {
-        drawCloud(ctx, cloud);
+        drawCloud(ctx, cloud, state.weather);
       });
-      drawHills(ctx);
+      drawHills(ctx, state.weather);
       state.pipes.forEach(function (pipe) {
         drawPipe(ctx, pipe);
       });
       if (state.phase === 'ready' && state.pipes.length > 0) {
         drawGapGuide(ctx, state.pipes[0], state.tick);
       }
-      drawGround(ctx, state.groundOffset);
+      drawGround(ctx, state.groundOffset, state.weather);
+      if (state.weather === 'storm') {
+        drawRain(ctx, state.raindrops);
+      }
       drawButterfly(ctx, state.butterfly, state.phase === 'dead');
+      if (state.weather === 'storm') {
+        drawLightningFlash(ctx, state.lightningFlash);
+      }
       drawParticles(ctx, state.particles);
       if (state.phase === 'playing' || state.phase === 'dead') {
         drawScore(ctx, state.score);
@@ -279,6 +326,12 @@ const Game: React.FC = () => {
   const onFlap = useCallback(() => {
     const state = stateRef.current;
     if (state.phase === 'ready') {
+      const weather = pickWeather();
+      state.weather = weather;
+      state.stars = weather === 'night' ? createStars() : [];
+      state.raindrops = weather === 'storm' ? createRaindrops() : [];
+      state.lightningTimer = weather === 'storm' ? 120 : 0;
+      state.lightningFlash = 0;
       state.phase = 'playing';
       state.butterfly = flap(state.butterfly);
       state.particles = spawnTrail(state.particles, state.butterfly);
@@ -293,7 +346,8 @@ const Game: React.FC = () => {
       playFlap();
       return;
     }
-    stateRef.current = createState('playing', state.highScore);
+    const weather = pickWeather(state.weather);
+    stateRef.current = createState('playing', state.highScore, weather);
     stateRef.current.butterfly = flap(stateRef.current.butterfly);
     stateRef.current.particles = spawnTrail(
       stateRef.current.particles,
@@ -350,7 +404,7 @@ const Game: React.FC = () => {
           </div>
         )}
         {ui.phase === 'dead' && (
-          <div className="game-overlay game-overlay-over">
+          <div className={`game-overlay game-overlay-over game-overlay-${ui.weather}`}>
             <h2>Game over</h2>
             <div className="scoreboard">
               <div>

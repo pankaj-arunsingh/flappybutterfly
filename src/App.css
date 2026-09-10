@@ -49,6 +49,12 @@
   pointer-events: none;
 }
 
+.game-overlay-night,
+.game-overlay-storm {
+  background: rgba(0, 0, 0, 0.45);
+  color: #fffef6;
+}
+
 .game-overlay h1,
 .game-overlay h2 {
   margin: 0 0 8px;

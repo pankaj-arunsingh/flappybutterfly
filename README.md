@@ -62,6 +62,11 @@ All rendering is immediate-mode Canvas 2D at 60fps via `requestAnimationFrame`:
 - `drawNearMissFlash` — quick `Close!` flash on a tight gap
 - `drawGapGuide` — pulsing arrow toward the first gap on the ready screen
 
+Runs randomly select one of three visual-only weather conditions when play
+starts: sunny, night (stars and moon), or storm (rain and occasional
+lightning). The first run allows any condition; later runs avoid immediately
+repeating the previous condition. The ready screen always uses the sunny scene.
+
 ### Tuning (`src/game/config.ts`)
 
 - `GRAVITY = 0.22`, `FLAP_VELOCITY = -6.2`, `MAX_FALL_SPEED = 6.0`
@@ -89,6 +94,7 @@ Oscillator-based SFX via the Web Audio API (no asset files):
 - **Score** — ascending two-tone chime
 - **Death** — soft descending tone (bonk)
 - **Near-miss** — bright two-blip chime (`playNearMiss`)
+- **Thunder** — low rumble when storm lightning strikes (`playThunder`)
 
 AudioContext is created and resumed on the first user gesture to satisfy iOS/Safari autoplay policy.
 
@@ -122,11 +128,11 @@ src/
   App.css / index.css
   game/
     config.ts      # dimensions, physics, speeds, easy-mode params
-    types.ts       # Phase, Butterfly, Pipe, Cloud, GameState, Medal
-    logic.ts       # flap, stepButterfly, stepPipes, difficulty ramp, collidesWithWorld, medals, highscore
+    types.ts       # Phase, Weather, Butterfly, Pipe, Cloud, Star, Raindrop, GameState, Medal
+    logic.ts       # flap, stepButterfly, stepPipes, weather, difficulty ramp, collidesWithWorld, medals, highscore
     logic.test.ts  # unit tests for medals, collisions, difficulty curve
-    audio.ts       # Web Audio SFX (flap/score/death)
-    draw.ts        # all canvas drawing
+    audio.ts       # Web Audio SFX (flap/score/death/near-miss/thunder)
+    draw.ts        # weather-aware canvas drawing
 ```
 
 ## Prerequisites
@@ -184,6 +190,7 @@ Launches Jest in watch mode. Relevant test file: `src/game/logic.test.ts` — co
 - gap fly-through vs. top-vine hit
 - difficulty-curve ramp (`difficultyAt`, `lerp`, pipes-scored decoupling)
 - easy-mode pipe parameters on initial pipes
+- weather selection and weather effects
 
 Run once in CI with:
 

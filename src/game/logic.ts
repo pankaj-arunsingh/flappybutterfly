@@ -14,6 +14,9 @@ import {
   GROUND_HEIGHT,
   HIGH_SCORE_KEY,
   HITBOX_INSET,
+  LIGHTNING_FLASH_FRAMES,
+  LIGHTNING_MAX_FRAMES,
+  LIGHTNING_MIN_FRAMES,
   MAX_FALL_SPEED,
   MAX_PARTICLES,
   NEAR_MISS_THRESHOLD,
@@ -21,11 +24,13 @@ import {
   PIPE_SPACING,
   PIPE_SPEED,
   PIPE_WIDTH,
+  RAIN_COUNT,
   RAMP_PIPES,
   READY_BOB_AMPLITUDE,
   READY_BOB_SPEED,
+  STAR_COUNT,
 } from './config';
-import { Butterfly, Medal, Particle, Pipe } from './types';
+import { Butterfly, Medal, Particle, Pipe, Raindrop, Star, Weather } from './types';
 
 export function medalForScore(score: number): Medal {
   if (score >= 35) {
@@ -313,4 +318,67 @@ export function writeHighScore(score: number): void {
   } catch (err) {
     // Ignore private-mode storage failures.
   }
+}
+
+const WEATHER_OPTIONS: Weather[] = ['sunny', 'night', 'storm'];
+
+export function pickWeather(previous?: Weather): Weather {
+  const choices = previous
+    ? WEATHER_OPTIONS.filter(function (w) { return w !== previous; })
+    : WEATHER_OPTIONS;
+  return choices[Math.floor(Math.random() * choices.length)];
+}
+
+export function createStars(): Star[] {
+  const stars: Star[] = [];
+  for (let i = 0; i < STAR_COUNT; i += 1) {
+    stars.push({
+      x: Math.random() * GAME_WIDTH,
+      y: Math.random() * (GAME_HEIGHT - 120),
+      size: 0.8 + Math.random() * 2,
+      phase: Math.random() * Math.PI * 2,
+    });
+  }
+  return stars;
+}
+
+export function createRaindrops(): Raindrop[] {
+  const drops: Raindrop[] = [];
+  for (let i = 0; i < RAIN_COUNT; i += 1) {
+    drops.push({
+      x: Math.random() * (GAME_WIDTH + 60) - 30,
+      y: Math.random() * GAME_HEIGHT,
+      speed: 4 + Math.random() * 4,
+    });
+  }
+  return drops;
+}
+
+export function stepRain(drops: Raindrop[]): Raindrop[] {
+  const next: Raindrop[] = [];
+  for (let i = 0; i < drops.length; i += 1) {
+    const d = drops[i];
+    let y = d.y + d.speed;
+    let x = d.x - d.speed * 0.35;
+    if (y > GAME_HEIGHT + 10 || x < -40) {
+      x = Math.random() * (GAME_WIDTH + 60) - 30;
+      y = -10 - Math.random() * 40;
+    }
+    next.push({ x: x, y: y, speed: d.speed });
+  }
+  return next;
+}
+
+export function stepLightning(timer: number, flash: number, reducedMotion: boolean): { timer: number; flash: number } {
+  let nextTimer = timer;
+  let nextFlash = flash;
+  if (nextFlash > 0) {
+    nextFlash -= 1;
+  } else if (nextTimer > 0) {
+    nextTimer -= 1;
+  } else {
+    nextFlash = reducedMotion ? 2 : LIGHTNING_FLASH_FRAMES;
+    nextTimer = LIGHTNING_MIN_FRAMES + Math.floor(Math.random() * (LIGHTNING_MAX_FRAMES - LIGHTNING_MIN_FRAMES));
+  }
+  return { timer: nextTimer, flash: nextFlash };
 }
