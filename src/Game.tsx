@@ -10,6 +10,7 @@ import {
 import {
   BUTTERFLY_HEIGHT,
   BUTTERFLY_WIDTH,
+  CELEBRATION_NEW_BEST_CONFETTI_COUNT,
   CLOUD_SPEED,
   GAME_HEIGHT,
   GAME_WIDTH,
@@ -34,7 +35,6 @@ import {
   drawScore,
   drawSky,
   drawStars,
-  medalColor,
 } from './game/draw';
 import {
   butterflyOverlapsPipe,
@@ -241,19 +241,22 @@ const Game: React.FC = () => {
             state.shake = SHAKE_FRAMES;
           }
           const oldBest = state.highScore;
+          const earnedMedal = medalForScore(state.score);
           if (isNewBest(state.score, oldBest)) {
             state.highScore = state.score;
             writeHighScore(state.highScore);
-            state.celebration = {
-              confetti: REDUCED_MOTION ? [] : spawnConfetti(50),
-              medal: medalForScore(state.score) === 'none' ? null : spawnFallingMedal(medalForScore(state.score)),
-              newBestWord: CELEBRATORY_WORDS[Math.floor(Math.random() * CELEBRATORY_WORDS.length)],
-            };
-            playApplause();
-          } else if (medalForScore(state.score) !== 'none') {
+            if (earnedMedal !== 'none') {
+              state.celebration = {
+                confetti: REDUCED_MOTION ? [] : spawnConfetti(CELEBRATION_NEW_BEST_CONFETTI_COUNT),
+                medal: spawnFallingMedal(earnedMedal),
+                newBestWord: CELEBRATORY_WORDS[Math.floor(Math.random() * CELEBRATORY_WORDS.length)],
+              };
+              playApplause();
+            }
+          } else if (earnedMedal !== 'none') {
             state.celebration = {
               confetti: REDUCED_MOTION ? [] : spawnConfetti(),
-              medal: spawnFallingMedal(medalForScore(state.score)),
+              medal: spawnFallingMedal(earnedMedal),
               newBestWord: null,
             };
           }
@@ -398,9 +401,6 @@ const Game: React.FC = () => {
     };
   }, [onFlap]);
 
-  const medal = medalForScore(ui.score);
-  const showMedal = ui.phase === 'dead' && medal !== 'none';
-
   return (
     <div className="game-shell">
       <div className="game-frame">
@@ -449,12 +449,6 @@ const Game: React.FC = () => {
                 <strong>{ui.highScore}</strong>
               </div>
             </div>
-            {showMedal && (
-              <div className="medal" style={{ borderColor: medalColor(medal) }}>
-                <span className="medal-disc" style={{ background: medalColor(medal) }} />
-                <span>{medal} medal</span>
-              </div>
-            )}
             <p className="hint">Hit a vine or the ground and the flight ends.</p>
             {ui.nearMisses > 0 && (
               <p className="hint">

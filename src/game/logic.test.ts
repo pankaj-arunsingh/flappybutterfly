@@ -261,7 +261,7 @@ describe('celebration', () => {
   });
 
   it('removes confetti under reduced motion and detects a new best', () => {
-    const celebration = { confetti: spawnConfetti(1), medal: spawnFallingMedal('gold'), newBestWord: 'Yipee!' };
+    const celebration = { confetti: spawnConfetti(1), medal: spawnFallingMedal('gold'), newBestWord: 'Yippee!' };
     expect(stepCelebration(celebration, true).confetti).toHaveLength(0);
     expect(isNewBest(11, 10)).toBe(true);
     expect(isNewBest(10, 10)).toBe(false);

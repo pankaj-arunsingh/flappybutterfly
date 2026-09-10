@@ -35,7 +35,7 @@ import {
 } from './config';
 import { Butterfly, Celebration, Confetti, FallingMedal, Medal, Particle, Pipe, Raindrop, Star, Weather } from './types';
 
-export const CELEBRATORY_WORDS = ['Yipee!', 'Hurray!', 'Awesome!', 'Wahoo!', 'Fantastic!'];
+export const CELEBRATORY_WORDS = ['Yippee!', 'Hurray!', 'Awesome!', 'Wahoo!', 'Fantastic!'];
 
 export function medalForScore(score: number): Medal {
   if (score >= 35) {
