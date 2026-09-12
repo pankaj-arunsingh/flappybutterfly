@@ -82,8 +82,9 @@
   justify-content: center;
   text-align: center;
   padding: 24px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(27, 67, 50, 0.18));
-  color: #1b4332;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(0, 0, 0, 0.3));
+  color: #fffef6;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.4);
   pointer-events: none;
 }
 
