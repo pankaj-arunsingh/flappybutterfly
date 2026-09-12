@@ -77,6 +77,7 @@ function createClouds(): Cloud[] {
 }
 
 function createState(phase: Phase, highScore: number, weather: Weather = 'sunny'): GameState {
+  const actualWeather = weather === 'sunny' && phase === 'ready' ? pickWeather() : weather;
   return {
     phase: phase,
     butterfly: createButterfly(GAME_HEIGHT / 2 - 40),
@@ -93,10 +94,10 @@ function createState(phase: Phase, highScore: number, weather: Weather = 'sunny'
     nearMissFlash: 0,
     shake: 0,
     pipesScored: 0,
-    weather: weather,
-    stars: weather === 'night' ? createStars() : [],
-    raindrops: weather === 'storm' ? createRaindrops() : [],
-    lightningTimer: weather === 'storm' ? 120 : 0,
+    weather: actualWeather,
+    stars: actualWeather === 'night' ? createStars() : [],
+    raindrops: actualWeather === 'storm' ? createRaindrops() : [],
+    lightningTimer: actualWeather === 'storm' ? 120 : 0,
     lightningFlash: 0,
     celebration: { confetti: [], medal: null, newBestWord: null },
   };
