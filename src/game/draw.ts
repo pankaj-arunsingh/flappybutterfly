@@ -272,7 +272,7 @@ export function drawScore(ctx: CanvasRenderingContext2D, score: number) {
   ctx.font = 'bold 42px "Trebuchet MS", "Segoe UI", sans-serif';
   ctx.textAlign = 'center';
   ctx.lineJoin = 'round';
-  ctx.strokeStyle = '#1b4332';
+  ctx.strokeStyle = '#fff';
   ctx.lineWidth = 6;
   ctx.strokeText(String(score), GAME_WIDTH / 2, 64);
   ctx.fillStyle = '#fffef6';
@@ -353,7 +353,7 @@ export function drawParticles(ctx: CanvasRenderingContext2D, particles: Particle
       ctx.font = 'bold ' + p.size + 'px "Trebuchet MS", "Segoe UI", sans-serif';
       ctx.textAlign = 'center';
       ctx.lineJoin = 'round';
-      ctx.strokeStyle = '#1b4332';
+      ctx.strokeStyle = '#fff';
       ctx.lineWidth = 4;
       ctx.strokeText(p.text, p.x, p.y);
       ctx.fillStyle = p.color;
@@ -398,7 +398,7 @@ export function drawNearMissFlash(ctx: CanvasRenderingContext2D, flash: number) 
   ctx.font = 'bold 30px "Trebuchet MS", "Segoe UI", sans-serif';
   ctx.textAlign = 'center';
   ctx.lineJoin = 'round';
-  ctx.strokeStyle = '#1b4332';
+  ctx.strokeStyle = '#fff';
   ctx.lineWidth = 5;
   const y = GAME_HEIGHT / 2 - 140;
   ctx.strokeText('Close!', GAME_WIDTH / 2, y);
