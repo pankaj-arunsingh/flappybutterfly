@@ -72,7 +72,7 @@ export function isMusicMuted(): boolean {
   try {
     return window.localStorage.getItem(MUSIC_KEY) === 'true';
   } catch (err) {
-    return isMuted;
+    return getMutedState();
   }
 }
 
