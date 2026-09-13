@@ -1,5 +1,5 @@
 import { ensureCtx } from './audio';
-import { MUSIC_DEFAULT_MUTED, MUSIC_KEY } from './config';
+import { MUSIC_DEFAULT_MUTED, MUSIC_KEY, setMutedState, getMutedState } from './config';
 import { Weather } from './types';
 
 export interface MusicTrack {
@@ -9,6 +9,10 @@ export interface MusicTrack {
   tempo: number;
   wave: OscillatorType;
 }
+
+// We need a way to update the shared state in config.ts. 
+// Since we can't assign to a constant import, we'll use a setter or just the local 'muted' variable
+// and let the audio.ts use the local state via a function.
 
 // Short, repeating phrases keep the music light and let the synth feel like a
 // little soundscape rather than a melody that competes with the game.
@@ -68,13 +72,20 @@ export function isMusicMuted(): boolean {
   try {
     return window.localStorage.getItem(MUSIC_KEY) === 'true';
   } catch (err) {
-    return muted;
+    return getMutedState();
   }
 }
 
 export function setMusicMuted(value: boolean): void {
   muted = value;
-  if (masterGain) fadeGain(masterGain, muted ? 0 : gameOver ? 0.05 : 0.12, 0.25);
+  setMutedState(value);
+  if (masterGain) {
+    if (value) {
+      stopMusic(0.25);
+    } else {
+      fadeGain(masterGain, gameOver ? 0.05 : 0.12, 0.25);
+    }
+  }
   try {
     window.localStorage.setItem(MUSIC_KEY, String(value));
   } catch (err) {
@@ -89,11 +100,12 @@ export function startMusic(weather: Weather): void {
   stopMusic(0.3);
   gameOver = false;
   activeTrack = pickTrack(weather);
-  masterGain = ctx.createGain();
-  masterGain.gain.setValueAtTime(0.0001, ctx.currentTime);
-  masterGain.connect(ctx.destination);
-  fadeGain(masterGain, isMusicMuted() ? 0 : 0.12, 0.8);
-  schedulePhrase(ctx, activeTrack, masterGain);
+  if (masterGain) {
+    masterGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    masterGain.connect(ctx.destination);
+    fadeGain(masterGain, isMusicMuted() ? 0 : 0.12, 0.8);
+    schedulePhrase(ctx, activeTrack, masterGain);
+  }
 }
 
 export function setMusicGameOver(): void {
