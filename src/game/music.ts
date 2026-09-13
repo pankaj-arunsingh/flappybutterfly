@@ -74,7 +74,13 @@ export function isMusicMuted(): boolean {
 
 export function setMusicMuted(value: boolean): void {
   muted = value;
-  if (masterGain) fadeGain(masterGain, muted ? 0 : gameOver ? 0.05 : 0.12, 0.25);
+  if (masterGain) {
+    if (value) {
+      stopMusic(0.25);
+    } else {
+      fadeGain(masterGain, gameOver ? 0.05 : 0.12, 0.25);
+    }
+  }
   try {
     window.localStorage.setItem(MUSIC_KEY, String(value));
   } catch (err) {
