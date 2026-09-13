@@ -1,5 +1,5 @@
 import { ensureCtx } from './audio';
-import { MUSIC_DEFAULT_MUTED, MUSIC_KEY, setMutedState } from './config';
+import { MUSIC_DEFAULT_MUTED, MUSIC_KEY, setMutedState, getMutedState } from './config';
 import { Weather } from './types';
 
 export interface MusicTrack {
