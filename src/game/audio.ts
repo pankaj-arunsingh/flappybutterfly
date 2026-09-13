@@ -1,4 +1,4 @@
-import { isMusicMuted } from './game/music';
+import { isMuted } from './config';
 
 let audioCtx: AudioContext | null = null;
 
@@ -22,7 +22,7 @@ function playTone(
   gainValue: number = 0.15,
   endFreq?: number
 ) {
-  if (isMusicMuted()) return;
+  if (isMuted) return;
   const ctx = ensureCtx();
   if (!ctx) return;
   const osc = ctx.createOscillator();
@@ -61,7 +61,7 @@ export function playNearMiss() {
 }
 
 export function playThunder() {
-  if (isMusicMuted()) return;
+  if (isMuted) return;
   const ctx = ensureCtx();
   if (!ctx) return;
   const osc = ctx.createOscillator();

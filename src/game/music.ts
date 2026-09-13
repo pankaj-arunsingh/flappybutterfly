@@ -1,4 +1,4 @@
-import { ensureCtx } from './audio';
+import { ensureCtx, isMuted } from './config';
 import { MUSIC_DEFAULT_MUTED, MUSIC_KEY } from './config';
 import { Weather } from './types';
 
@@ -68,12 +68,13 @@ export function isMusicMuted(): boolean {
   try {
     return window.localStorage.getItem(MUSIC_KEY) === 'true';
   } catch (err) {
-    return muted;
+    return isMuted;
   }
 }
 
 export function setMusicMuted(value: boolean): void {
   muted = value;
+  isMuted = value;
   if (masterGain) {
     if (value) {
       stopMusic(0.25);
