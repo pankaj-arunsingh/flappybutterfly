@@ -38,7 +38,15 @@ export const SHAKE_FRAMES = 18;
 
 export const HIGH_SCORE_KEY = 'flappybutterfly-highscore';
 export const MUSIC_KEY = 'flappybutterfly-music-muted';
-export let isMuted = false; // Shared state for audio and music
+export let isMuted = false;
+
+export function setMutedState(val: boolean) {
+  isMuted = val;
+}
+
+export function getMutedState(): boolean {
+  return isMuted;
+}
 
 export const MUSIC_DEFAULT_MUTED = false;
 

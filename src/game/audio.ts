@@ -1,4 +1,4 @@
-import { isMuted } from './config';
+import { getMutedState } from './config';
 
 let audioCtx: AudioContext | null = null;
 
